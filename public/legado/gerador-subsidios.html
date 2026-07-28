@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Subsídios — Jurídico Pitzi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1c2438; --ink-2:#333d55; --ink-3:#5a6480;
+  --paper-bg:#e9ebf1; --paper:#fffdf9; --paper-edge:#e3ddd0;
+  --rule:#d8dbe3; --rule-2:#eceef2;
+  --wine:#7a2331; --wine-2:#9c3a47; --wine-bg:#f7e9ea;
+  --brass:#a9863f; --brass-2:#cdb06a; --brass-bg:#f6efdd;
+  --ok:#3f6b4f; --ok-bg:#e9f2ec;
+  --ph:#b7bccb;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --radius:3px;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; font-family:var(--sans); color:var(--ink); background:var(--paper-bg);
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+::selection{background:var(--brass-2);color:#fff;}
+
+/* ---------- layout ---------- */
+.app{height:100vh;display:flex;flex-direction:column;}
+.topbar{
+  display:flex;align-items:center;gap:18px;padding:12px 20px;
+  background:var(--ink);color:#f1efe6;flex:0 0 auto;
+  border-bottom:3px solid var(--brass);
+}
+.topbar .brand{display:flex;flex-direction:column;line-height:1.15;}
+.topbar .brand b{font-size:15.5px;letter-spacing:.2px;}
+.topbar .brand span{font-size:11px;color:#b9c0d6;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;}
+.seal{
+  width:34px;height:34px;border-radius:50%;border:2px solid var(--brass-2);
+  display:flex;align-items:center;justify-content:center;font-family:var(--serif);
+  font-weight:700;font-size:15px;color:var(--brass-2);flex:0 0 auto;
+}
+.topbar .spacer{flex:1;}
+.tipo-toggle{display:flex;background:#131a2b;border-radius:20px;padding:3px;border:1px solid #333d55;}
+.tipo-toggle button{
+  border:none;background:transparent;color:#9aa2ba;padding:7px 14px;border-radius:16px;
+  font-size:12.5px;font-weight:600;cursor:pointer;letter-spacing:.02em;
+}
+.tipo-toggle button.active{background:var(--wine);color:#fff;}
+.btn-ghost-top{
+  background:transparent;border:1px solid #454f6b;color:#d8dce6;padding:7px 12px;
+  border-radius:20px;font-size:12.5px;cursor:pointer;font-weight:500;
+}
+.btn-ghost-top:hover{border-color:var(--brass-2);color:#fff;}
+
+.layout{flex:1;display:grid;grid-template-columns:272px 400px 1fr;min-height:0;}
+.rail,.form-panel,.doc-panel{min-height:0;overflow-y:auto;}
+.rail{background:#f2f1ec;border-right:1px solid var(--paper-edge);}
+.form-panel{background:#fbfbf9;border-right:1px solid var(--rule);}
+.doc-panel{background:var(--paper-bg);}
+
+/* ---------- rail / index ---------- */
+.rail-head{padding:16px 16px 8px;}
+.rail-head input[type=search]{
+  width:100%;padding:8px 10px;border:1px solid var(--rule);border-radius:var(--radius);
+  background:#fff;font-size:12.5px;
+}
+.rail-group{padding:6px 0 10px;}
+.rail-group h4{
+  margin:14px 16px 4px;font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;
+  color:var(--ink-3);font-family:var(--mono);font-weight:600;
+}
+.rail-item{
+  display:flex;gap:10px;align-items:flex-start;padding:8px 16px;cursor:pointer;
+  border-left:3px solid transparent;
+}
+.rail-item:hover{background:#e8e6de;}
+.rail-item.active{background:var(--paper);border-left-color:var(--wine);}
+.rail-item .num{
+  font-family:var(--mono);font-size:10.5px;color:var(--brass);font-weight:600;
+  padding-top:2px;flex:0 0 auto;width:16px;
+}
+.rail-item .lbl{font-size:12.7px;line-height:1.35;font-weight:500;color:var(--ink-2);}
+.rail-item.active .lbl{color:var(--ink);font-weight:600;}
+
+/* ---------- form panel ---------- */
+.form-empty{padding:40px 28px;color:var(--ink-3);}
+.form-empty h2{font-family:var(--serif);font-size:20px;color:var(--ink);margin:0 0 10px;}
+.form-empty p{font-size:13.5px;line-height:1.6;}
+.fp-head{padding:18px 22px 10px;border-bottom:1px solid var(--rule);}
+.fp-head .eyebrow{font-family:var(--mono);font-size:10.5px;color:var(--wine);text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+.fp-head h3{margin:4px 0 6px;font-family:var(--serif);font-size:19px;}
+.fp-head p{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.5;}
+.fp-body{padding:6px 22px 40px;}
+.fieldset{margin-top:18px;}
+.fieldset > h5{
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);
+  font-family:var(--mono);font-weight:600;margin:0 0 10px;border-bottom:1px solid var(--rule-2);padding-bottom:6px;
+}
+.field{margin-bottom:11px;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:3px;}
+.field .hint{font-size:11px;color:var(--ink-3);margin-top:2px;}
+.field input[type=text],.field input[type=date],.field input[type=number],.field select,.field textarea{
+  width:100%;padding:7px 9px;border:1px solid var(--rule);border-radius:var(--radius);
+  background:#fff;font-size:12.8px;
+}
+.field textarea{min-height:56px;resize:vertical;line-height:1.4;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--wine-2);box-shadow:0 0 0 3px var(--wine-bg);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+.ramo-list{display:flex;flex-direction:column;gap:8px;}
+.ramo-opt{
+  border:1px solid var(--rule);border-radius:var(--radius);padding:9px 11px;cursor:pointer;background:#fff;
+}
+.ramo-opt:hover{border-color:var(--brass-2);}
+.ramo-opt.sel{border-color:var(--wine);background:var(--wine-bg);}
+.ramo-opt .r-top{display:flex;gap:8px;align-items:flex-start;}
+.ramo-opt input{margin-top:3px;}
+.ramo-opt .r-label{font-size:12.7px;font-weight:600;line-height:1.35;}
+.ramo-opt .r-docs{font-size:11px;color:var(--ink-3);margin:4px 0 0 22px;font-family:var(--mono);}
+
+.docs-check{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
+.doc-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;border:1px dashed var(--rule);border-radius:var(--radius);background:#fff;}
+.doc-row .tag{
+  font-family:var(--mono);font-size:10.5px;background:var(--brass-bg);color:var(--brass);
+  padding:1px 6px;border-radius:10px;font-weight:700;flex:0 0 auto;
+}
+.doc-row.done{border-style:solid;border-color:var(--ok);background:var(--ok-bg);}
+.doc-row .name{flex:1;}
+.doc-row button{
+  font-size:10.5px;border:1px solid var(--rule);background:#fff;border-radius:12px;
+  padding:2px 9px;cursor:pointer;font-weight:600;color:var(--ink-2);
+}
+.doc-row.done button{color:var(--wine);border-color:var(--wine-2);}
+
+.ref-note{margin-top:14px;font-size:11px;color:var(--ink-3);font-style:italic;border-left:2px solid var(--brass-2);padding-left:9px;}
+
+/* ---------- document panel ---------- */
+.dp-toolbar{
+  position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;
+  padding:10px 22px;background:var(--paper-bg);border-bottom:1px solid var(--paper-edge);
+}
+.dp-toolbar .spacer{flex:1;}
+.tbtn{
+  border:1px solid var(--ink-3);background:#fff;color:var(--ink-2);padding:6px 12px;
+  border-radius:16px;font-size:12px;cursor:pointer;font-weight:600;display:flex;gap:6px;align-items:center;
+}
+.tbtn:hover{border-color:var(--wine);color:var(--wine);}
+.tbtn.primary{background:var(--wine);border-color:var(--wine);color:#fff;}
+.tbtn.primary:hover{background:var(--wine-2);}
+.tbtn.on{background:var(--ink);border-color:var(--ink);color:#fff;}
+
+.doc-wrap{padding:26px 34px 90px;display:flex;justify-content:center;}
+.page{
+  width:100%;max-width:760px;background:var(--paper);
+  box-shadow:0 1px 2px rgba(28,36,56,.06),0 10px 30px rgba(28,36,56,.14);
+  border:1px solid var(--paper-edge);position:relative;padding:56px 58px 64px;
+  font-family:var(--serif);font-size:14.5px;line-height:1.68;color:#20263a;
+}
+.page[contenteditable="true"]{outline:2px dashed var(--brass-2);outline-offset:8px;}
+.page h1.doctitle{font-size:15px;font-weight:700;text-align:right;font-family:var(--sans);margin:0 0 26px;color:var(--ink-2);}
+.page .addr-block{margin-bottom:22px;}
+.page .addr-block .to{font-size:13.5px;color:var(--ink-3);font-family:var(--sans);}
+.page p{margin:0 0 14px;text-align:justify;}
+.page h2.sec{
+  font-family:var(--sans);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--wine);font-weight:700;margin:26px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--rule-2);
+}
+.page .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-family:var(--sans);font-size:13px;margin-bottom:4px;}
+.page .kv b{color:var(--ink-3);font-weight:600;}
+.page .sign{margin-top:48px;text-align:center;}
+.page .sign .line{border-top:1px solid var(--ink-3);width:260px;margin:0 auto 6px;}
+.ph{color:var(--wine-2);background:var(--wine-bg);padding:0 4px;border-radius:2px;font-style:normal;font-family:var(--sans);font-size:12.5px;}
+
+/* exhibit tabs */
+.exhibit{display:block;margin:6px 0 18px;}
+.exhibit-box{
+  border:1.5px dashed var(--brass-2);border-radius:6px;background:var(--brass-bg);
+  padding:14px;display:flex;align-items:center;gap:12px;font-family:var(--sans);
+}
+.exhibit-box .num{
+  width:30px;height:30px;border-radius:50%;background:var(--brass);color:#fff;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;font-family:var(--mono);
+}
+.exhibit-box .lbl{flex:1;font-size:12.5px;color:#5a4b28;}
+.exhibit-box .lbl b{display:block;color:var(--ink);font-size:12.5px;}
+.exhibit-box button{
+  background:var(--ink);color:#fff;border:none;padding:6px 12px;border-radius:14px;
+  font-size:11.5px;cursor:pointer;font-weight:600;
+}
+.exhibit-filled{border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:#fff;}
+.exhibit-filled .cap{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--ok-bg);font-family:var(--sans);font-size:11.5px;
+}
+.exhibit-filled .cap .num{width:22px;height:22px;border-radius:50%;background:var(--ok);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;font-family:var(--mono);}
+.exhibit-filled .cap b{flex:1;color:var(--ink);}
+.exhibit-filled .cap button{background:transparent;border:1px solid var(--rule);border-radius:12px;padding:2px 9px;font-size:10.5px;cursor:pointer;color:var(--ink-3);}
+.exhibit-filled img{display:block;max-width:100%;max-height:420px;object-fit:contain;margin:0 auto;background:#f4f4f2;}
+
+.empty-doc{display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-3);text-align:center;padding:60px;}
+.empty-doc .inner{max-width:340px;}
+.empty-doc .glyph{font-family:var(--serif);font-size:44px;color:var(--brass-2);margin-bottom:10px;}
+.empty-doc h3{font-family:var(--serif);font-size:19px;color:var(--ink);margin:0 0 8px;}
+.empty-doc p{font-size:13px;line-height:1.6;}
+
+.reqs-table{width:100%;font-family:var(--sans);font-size:13px;margin:6px 0 4px;border-collapse:collapse;}
+.reqs-table td{padding:3px 0;}
+.reqs-table td.v{text-align:right;font-family:var(--mono);}
+.reqs-table tr.total td{border-top:1px solid var(--ink-3);font-weight:700;padding-top:6px;}
+
+@media (max-width:1100px){
+  .layout{grid-template-columns:1fr;grid-auto-rows:min-content;}
+  .rail,.form-panel,.doc-panel{display:none;border:none;}
+  .rail.mobile-show,.form-panel.mobile-show,.doc-panel.mobile-show{display:block;}
+  .mobiletabs{display:flex;background:#fff;border-bottom:1px solid var(--rule);}
+  .mobiletabs button{flex:1;border:none;background:transparent;padding:11px;font-size:12px;font-weight:700;color:var(--ink-3);border-bottom:3px solid transparent;}
+  .mobiletabs button.active{color:var(--wine);border-color:var(--wine);}
+  .doc-wrap{padding:16px;}
+  .page{padding:30px 20px;}
+}
+@media (min-width:1101px){.mobiletabs{display:none;}}
+
+@media print{
+  .topbar,.rail,.form-panel,.dp-toolbar,.mobiletabs{display:none !important;}
+  .layout{display:block;}
+  .doc-panel{overflow:visible;background:#fff;}
+  .doc-wrap{padding:0;}
+  .page{box-shadow:none;border:none;max-width:100%;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="seal">P</div>
+    <div class="brand"><b>Gerador de Subsídios</b><span>Jurídico · Pitzi</span></div>
+    <div class="spacer"></div>
+    <div class="tipo-toggle" id="tipoToggle">
+      <button data-action="set-tipo" data-tipo="procon">PROCON</button>
+      <button data-action="set-tipo" data-tipo="judicial">Subsídio Judicial</button>
+    </div>
+    <button class="btn-ghost-top" data-action="novo-caso">+ Novo caso</button>
+  </div>
+
+  <div class="mobiletabs" id="mobileTabs">
+    <button data-action="mobile-tab" data-tab="rail" class="active">Motivo</button>
+    <button data-action="mobile-tab" data-tab="form">Dados</button>
+    <button data-action="mobile-tab" data-tab="doc">Documento</button>
+  </div>
+
+  <div class="layout">
+    <div class="rail mobile-show" id="rail"></div>
+    <div class="form-panel" id="formPanel"></div>
+    <div class="doc-panel" id="docPanel"></div>
+  </div>
+
+</div>
+
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+
+<script>
+/* =========================================================================
+   GERADOR DE SUBSÍDIOS — motor + dados
+   ========================================================================= */
+
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+function esc(s){
+  return (s===undefined||s===null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function V(val, ph){
+  const s = (val===undefined||val===null?'':String(val)).trim();
+  return s ? esc(s) : `<span class="ph">${esc(ph)}</span>`;
+}
+function D(val, ph){
+  if(!val) return `<span class="ph">${esc(ph||'data')}</span>`;
+  const [y,m,d] = val.split('-').map(Number);
+  if(!y||!m||!d) return esc(val);
+  return `${String(d).padStart(2,'0')} de ${MESES[m-1]} de ${y}`;
+}
+function todayLong(){
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2,'0')} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`;
+}
+function slot(id){ return `<div class="exhibit" data-slot="${id}"></div>`; }
+
+/* Shared "abertura dos FATOS" — comum a quase todos os modelos */
+function aberturaFatos(v){
+  return `<p>A parte ${V(v.tratamento,'autora/consumidora')} adquiriu da PITZI plano de proteção para o aparelho modelo ${V(v.modeloAparelho,'modelo do aparelho')}, IMEI: ${V(v.imei,'nº do IMEI')}, n${'ª'} ${V(v.source,'loja/canal de venda')}, em ${D(v.dataAquisicao,'data de aquisição')}.</p>`;
+}
+
+const FECHAMENTO_BOAFE = `<p>Nesse sentido, entende a PITZI ter agido com clareza e boa-fé objetiva desde o início na resolução do caso, não havendo que se falar em danos materiais ou morais em desfavor da parte reclamante.</p>`;
+
+const SOBRE_FORNECEDORA = (v) => `<p>A fornecedora PITZI é uma empresa especializada em recondicionamento, reparação, compra, venda e comercialização de aparelhos celulares, smartphones e tablets. Com atuação há mais de 13 anos na estruturação de produtos e serviços relacionados à excelência operacional de programas de seguros, representa as principais seguradoras do país, entre elas ${V(v.seguradoras,'GAZIN, GENERALI e MAPFRE')}.</p>`;
+
+/* =========================================================================
+   MOTIVOS (18) — cada um com: id, grupo, numero, titulo, quandoUsar,
+   alegacaoDefault, camposExtras[], baseCasos, ramos[{id,label,docs[],texto(v)}]
+   ========================================================================= */
+const MOTIVOS = [];
+
+/* ---- helper to push categories ---- */
+function addMotivo(m){ MOTIVOS.push(m); }
+
+/* ============================= GRUPO 1: CONTRATAÇÃO E VENDAS ============================= */
+
+addMotivo({
+  id:'nao_reconhece', numero:'01', grupo:'Contratação e Vendas',
+  titulo:'Não reconhece a contratação/proteção',
+  quandoUsar:'Consumidor alega desconhecer integralmente a contratação da proteção ou Garantia Estendida, pedindo estorno e indenização por danos morais.',
+  alegacaoDefault:'A parte sustenta, em síntese, desconhecer a contratação da proteção objeto da lide, alegando ausência de consentimento livre e informado, bem como postula a restituição de valores e a indenização por danos morais.',
+  baseCasos:'Sueellen Louise Severo · Leandro da Conceição de Jesus · Jonatas Oliveira dos Santos · Sonia Gracia Pucci Medina',
+  camposExtras:[
+    {key:'canal', label:'Canal de venda', type:'select', options:['Loja física (varejo)','Amazon GE (marketplace)','Mercado Livre'], default:'Amazon GE (marketplace)'},
+    {key:'valorPremio', label:'Valor do prêmio (R$)', type:'text', ph:'ex.: 21,00'},
+    {key:'lmi', label:'Limite Máximo de Indenização — LMI (R$)', type:'text'},
+    {key:'vigenciaIni', label:'Início da vigência', type:'date'},
+    {key:'vigenciaFim', label:'Fim da vigência', type:'date'},
+  ],
+  ramos:[
+    { id:'loja_fisica', label:'Loja física — comprovante emitido no ato + e-mail de acesso à conta',
+      docs:[{id:'d1',label:'Documento comprobatório da contratação (emitido no ato)'},{id:'d2',label:'E-mail de acesso à área logada (customer.io)'}],
+      texto:(v)=>`
+        <p>No dia da aquisição do plano, foi enviada pela PITZI uma mensagem para o e-mail cadastrado pela parte ${v.tratamento}, disponibilizando um link de acesso à área logada, onde constam o contrato e as condições do plano adquirido, bem como os canais de atendimento para dúvida, cancelamento ou auxílio.</p>
+        ${slot('d1')}
+        <p>A parte ${v.tratamento} recebeu, no ato da contratação, o documento comprobatório de aquisição do plano, emitido na mesma data, restando comprovadas sua anuência e ciência acerca da contratação e das condições contratuais.</p>
+        ${slot('d2')}
+        <p>Até a presente data, não há qualquer registro de contato pela parte ${v.tratamento} aos canais de atendimento amplamente divulgados no bilhete e no e-mail, solicitando o cancelamento, reclamação ou auxílio para o plano — solicitação que a fornecedora só veio a tomar conhecimento por meio da presente reclamação.</p>` },
+    { id:'amazon', label:'Amazon GE — fluxo de checkbox no checkout (contratação eletrônica regular)',
+      docs:[{id:'d1',label:'Print do fluxo de checkout com o checkbox da Garantia Estendida'},{id:'d2',label:'Bilhete de seguro com cobertura, prêmio e vigência'}],
+      texto:(v)=>`
+        <p>A PITZI atua em parceria com a Amazon Brasil, disponibilizando em sua plataforma planos de Garantia Estendida para produtos eletroeletrônicos, cuja adesão é facultativa e exige manifestação positiva do consumidor no fluxo de compra, mediante seleção da oferta na tela e posterior conclusão do pedido.</p>
+        ${slot('d1')}
+        <p>Trata-se de fluxo que depende de manifestação positiva do titular da compra para a inclusão da proteção no pedido — não se trata de produto obrigatório, automático ou imposto como condição para aquisição do bem, mas de oferta acessória vinculada a bens elegíveis.</p>
+        <p>No caso em tela, o bilhete de seguro registra expressamente a contratação de cobertura de "Defeito de Fábrica (Garantia Estendida)", com limite máximo de indenização de R$ ${V(v.lmi,'valor do LMI')} e prêmio total de R$ ${V(v.valorPremio,'valor do prêmio')}, com vigência de ${D(v.vigenciaIni,'início')} a ${D(v.vigenciaFim,'fim')}.</p>
+        ${slot('d2')}
+        <p>A mera alegação unilateral de desconhecimento não é apta, por si só, a invalidar a contratação eletrônica impugnada, sendo indispensável a demonstração concreta de fraude, uso indevido de dados pessoais, acesso irregular à conta ou falha sistêmica da plataforma, circunstâncias que não se verificam no presente caso. Subsidiariamente, ainda que não tenha sido a própria parte ${v.tratamento} quem materialmente concluiu a operação, subsiste a possibilidade de que a aquisição tenha sido realizada por pessoa de sua confiança, com acesso consentido às suas credenciais, o que não caracteriza contratação viciada nem irregularidade imputável à fornecedora.</p>
+        <p>Não há, ainda, demonstração de qualquer contato administrativo prévio e específico perante a PITZI relativo a este contrato, o que revela o acionamento prematuro do órgão de defesa do consumidor, sem oportunizar a verificação administrativa da divergência.</p>` },
+    { id:'meli', label:'Mercado Livre — contratação vinculada à compra no marketplace',
+      docs:[{id:'d1',label:'Comprovante de contratação anexado pela parte'}],
+      texto:(v)=>`
+        <p>A PITZI atua/atuava em parceria com o Mercado Livre, oferecendo em sua plataforma planos de proteção para aparelhos celulares. Para este modelo de parceria, os serviços de contratação, acionamento (abertura de SR), cancelamento e estorno de valores são processados diretamente com o parceiro Mercado Livre, estando a tutela da PITZI limitada a sanar dúvidas quanto à proteção e à regulação de sinistros, reparos, substituição/trocas e logística, quando acionada pelo próprio parceiro.</p>
+        <p>A parte ${v.tratamento} anexou em sua reclamação o documento comprobatório de aquisição do plano, restando comprovada sua anuência e ciência acerca da contratação e das condições contratuais.</p>
+        ${slot('d1')}` },
+    { id:'ja_cancelado', label:'Já cancelado a pedido do consumidor — estorno já efetuado ou em oferta',
+      docs:[{id:'d1',label:'Registro do contato solicitando cancelamento'},{id:'d2',label:'Comprovante de cancelamento e estorno'}],
+      texto:(v)=>`
+        <p>Em ${D(v.dataAquisicao,'data')}, a parte ${v.tratamento} entrou em contato com o time de atendimento da PITZI solicitando o cancelamento da proteção.</p>
+        ${slot('d1')}
+        <p>Nesse mesmo dia, foi providenciado o cancelamento do plano e o estorno do valor cobrado, a título de devolução da quantia paga pelo cartão, cobrindo os valores das mensalidades vencidas e vincendas.</p>
+        ${slot('d2')}
+        <p>Dito isso, entende a PITZI já ter sido cumprida integralmente a solicitação da parte ${v.tratamento}, não havendo que se falar em desconhecimento da contratação ou em qualquer dano material ou moral.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'venda_casada', numero:'02', grupo:'Contratação e Vendas',
+  titulo:'Venda casada',
+  quandoUsar:'Consumidor alega ter sido obrigado a contratar a proteção como condição para levar o aparelho, ou não ter sido informado sobre a cobrança.',
+  alegacaoDefault:'A parte alega que a contratação da proteção foi imposta como condição para a aquisição do aparelho (venda casada), sem informação clara no ato da compra.',
+  baseCasos:'Modelo interno 14-P/14-J (Jurídico Pitzi)',
+  camposExtras:[
+    {key:'valorPremio', label:'Valor do prêmio (R$)', type:'text'},
+  ],
+  ramos:[
+    { id:'contrato_anexado', label:'Consumidor anexou o próprio bilhete/comprovante na reclamação',
+      docs:[{id:'d1',label:'Comprovante de contratação (anexado pela própria parte)'}],
+      texto:(v)=>`
+        <p>A parte ${v.tratamento} anexou em sua própria reclamação o documento comprobatório de aquisição do plano, restando comprovada sua anuência e ciência acerca da contratação.</p>
+        ${slot('d1')}
+        <p>Nesse sentido, entende a PITZI que a alegação de venda casada é infundada e não encontra guarida na própria documentação trazida pela parte ${v.tratamento}. Todos os vendedores parceiros passam por treinamento no qual é reforçada a proibição de condicionar desconto no preço do bem à aquisição do seguro ou de vincular a aquisição do bem à contratação compulsória de qualquer proteção.</p>` },
+    { id:'uso_da_protecao', label:'Consumidor fez uso da proteção durante a vigência (sinistro aberto e atendido)',
+      docs:[{id:'d1',label:'Registro de abertura e atendimento do sinistro'}],
+      texto:(v)=>`
+        <p>Em data anterior à presente reclamação, a parte ${v.tratamento} fez uso do plano de proteção, tendo a PITZI procedido com a regulação dos documentos e, após aprovação, com a indenização na forma de reposição do bem segurado.</p>
+        ${slot('d1')}
+        <p>A PITZI entende, portanto, que resta comprovada a anuência e a ciência da parte ${v.tratamento} acerca da contratação do plano, na medida em que fez uso efetivo do serviço durante a vigência da proteção — o pagamento do prêmio na quantia de R$ ${V(v.valorPremio,'valor')} foi efetuado sem qualquer contestação bancária, configurando a contraprestação devida nos termos do art. 757 do Código Civil.</p>` },
+    { id:'sem_indicios', label:'Sem indícios que contestem a alegação — oferta de estorno por liberalidade',
+      docs:[],
+      texto:(v)=>`
+        <p>Não obstante a ausência de elementos que corroborem a alegação de venda casada, a PITZI, em observância aos princípios da boa-fé objetiva e da primazia da solução consensual, oferece o ressarcimento integral do valor de R$ ${V(v.valorPremio,'valor')} mediante depósito, a ser realizado após o fornecimento dos dados bancários de titularidade da parte ${v.tratamento}: nome completo, CPF, banco, agência e conta corrente.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'garantia_vigencia', numero:'03', grupo:'Contratação e Vendas',
+  titulo:'Vigência: garantia de fábrica x garantia estendida',
+  quandoUsar:'Consumidor questiona por que a vigência da Garantia Estendida só começa após o fim da garantia do fabricante, ou alega que o prazo do bilhete está incorreto.',
+  alegacaoDefault:'A parte alega que a vigência informada no bilhete está incorreta/atrasada, pois deveria contar a partir da compra, e não do fim da garantia de fábrica.',
+  baseCasos:'Magali Império Bakar Scarmato · Luis Fernando Matricardi Rodrigues · Sandra Candal',
+  camposExtras:[
+    {key:'fabricante', label:'Fabricante do produto', type:'text', ph:'ex.: Philips Walita, WAP'},
+    {key:'garantiaFabricanteAnos', label:'Prazo de garantia do fabricante', type:'text', ph:'ex.: 2 (dois) anos'},
+    {key:'dataEmissaoBilhete', label:'Data de emissão do bilhete', type:'date'},
+    {key:'vigenciaIni', label:'Início da vigência da Garantia Estendida', type:'date'},
+    {key:'vigenciaFim', label:'Fim da vigência da Garantia Estendida', type:'date'},
+    {key:'protocoloContato', label:'Protocolo de atendimento (se houve retificação)', type:'text'},
+  ],
+  ramos:[
+    { id:'retificado', label:'Consumidor entrou em contato — vigência já retificada junto à seguradora',
+      docs:[{id:'d1',label:'Bilhete com a vigência'},{id:'d2',label:'Nota fiscal + Termo de Garantia do fabricante'},{id:'d3',label:'Processo SUSEP do produto (consulta pública)'}],
+      texto:(v)=>`
+        <p>O bilhete de proteção estabelece a vigência da cobertura específica para o período de ${D(v.vigenciaIni,'início')} a ${D(v.vigenciaFim,'fim')}. Esta delimitação temporal é essencial ao contrato de proteção, que define o período de cobertura da Garantia Estendida.</p>
+        ${slot('d1')}
+        <p>A distinção entre a data de emissão da proteção (${D(v.dataEmissaoBilhete,'emissão')}) e a vigência da cobertura encontra respaldo na natureza específica do produto contratado: a Garantia Estendida tem por finalidade complementar a garantia legal e contratual do fabricante, iniciando sua eficácia apenas após o término desta. No caso concreto, o produto ${V(v.fabricante,'fabricante')} possui garantia contratual de ${V(v.garantiaFabricanteAnos,'prazo')}, contada da entrega, conforme nota fiscal e certificado de garantia do fabricante.</p>
+        ${slot('d2')}
+        <p>Em contato realizado pela parte ${v.tratamento} (protocolo n.º ${V(v.protocoloContato,'nº do protocolo')}), a fornecedora prontamente solicitou o comprovante da garantia do fabricante e a nota fiscal do produto, tendo sido aberto chamado interno para retificação da vigência do contrato junto à seguradora. Esta prática não configura recusa de cobertura, mas orientação técnica adequada, já que a garantia de fábrica cobre exclusivamente defeitos funcionais decorrentes de falhas no processo de fabricação, não abrangendo danos por mau uso, desgaste natural ou acidentes.</p>
+        <p>O contrato de proteção foi estruturado em consonância com as diretrizes da Superintendência de Seguros Privados (SUSEP), disponíveis para consulta pública no sítio eletrônico da autarquia, o qual estabelece com clareza os riscos cobertos, excluídos e as condições de acionamento da Garantia Estendida.</p>
+        ${slot('d3')}` },
+    { id:'sem_contato', label:'Sem contato prévio do consumidor — vigência do bilhete permanece válida',
+      docs:[{id:'d1',label:'Bilhete com a vigência'},{id:'d2',label:'Processo SUSEP do produto (consulta pública)'}],
+      texto:(v)=>`
+        <p>O bilhete de seguro apresentado pela parte ${v.tratamento} estabelece vigência da cobertura para o período de ${D(v.vigenciaIni,'início')} a ${D(v.vigenciaFim,'fim')}, o que não configura cláusula abusiva, mas elemento essencial do contrato que define o início de eficácia da Garantia Estendida após o término da garantia do fabricante ${V(v.fabricante,'fabricante')}, de ${V(v.garantiaFabricanteAnos,'prazo')}.</p>
+        ${slot('d1')}
+        <p>O art. 47 do CDC determina que cláusulas ambíguas sejam interpretadas favoravelmente ao consumidor; contudo, no presente caso não há ambiguidade na redação contratual, que especifica com clareza os períodos de vigência. Tampouco se identifica, nos autos, qualquer tentativa de acionamento da cobertura por parte da parte ${v.tratamento} junto aos canais de atendimento disponibilizados — ônus da prova que lhe incumbe, nos termos do art. 373, I, do CPC.</p>
+        <p>O contrato foi estruturado em consonância com as diretrizes da SUSEP, disponíveis para consulta pública, que estabelecem com clareza os riscos cobertos, excluídos e as condições de acionamento.</p>
+        ${slot('d2')}
+        <p>Ausente qualquer ato ilícito da seguradora ou nexo causal com os alegados danos, a mera existência de defeito no produto ainda sob garantia de fábrica não configura responsabilidade da seguradora ou de suas representantes.</p>` },
+  ]
+});
+
+/* ============================= GRUPO 2: COBRANÇA E CANCELAMENTO ============================= */
+
+addMotivo({
+  id:'renovacao', numero:'04', grupo:'Cobrança e Cancelamento',
+  titulo:'Renovação indesejada',
+  quandoUsar:'Plano foi renovado automaticamente ao fim da vigência e o consumidor alega não ter autorizado a renovação/cobrança.',
+  alegacaoDefault:'A parte alega que o plano de proteção foi renovado por igual período sem sua autorização, requerendo o cancelamento e o estorno dos valores cobrados.',
+  baseCasos:'Rogerio da Silva Pinto',
+  camposExtras:[
+    {key:'dataRenovacao', label:'Data da renovação automática', type:'date'},
+    {key:'numDias', label:'Dias entre a renovação e o pedido de cancelamento', type:'number'},
+    {key:'valor', label:'Valor a estornar (R$)', type:'text'},
+  ],
+  ramos:[
+    { id:'estornado', label:'Cancelamento e estorno já efetuados',
+      docs:[{id:'d1',label:'E-mail de aviso da renovação (customer.io)'},{id:'d2',label:'Confirmação do cancelamento e do estorno'}],
+      texto:(v)=>`
+        <p>Um mês antes do vencimento da proteção, a PITZI enviou e-mail à parte ${v.tratamento} informando que a proteção seria renovada automaticamente, disponibilizando link para o cancelamento do procedimento, em total alinho ao art. 774 do Código Civil ("A recondução tácita do contrato pelo mesmo prazo, mediante expressa cláusula contratual, não poderá operar mais de uma vez").</p>
+        ${slot('d1')}
+        <p>Após anuência tácita da parte ${v.tratamento}, a PITZI efetuou a cobrança da renovação, enviando em seguida e-mail de confirmação com acesso ao bilhete renovado.</p>
+        <p>Em ${D(v.dataRenovacao,'data')}, passados ${V(v.numDias,'nº')} dias da renovação automática, a parte ${v.tratamento} solicitou o cancelamento e o estorno da quantia paga. O cancelamento foi efetuado imediatamente e o estorno na quantia de R$ ${V(v.valor,'valor')}, a título de crédito cobrindo as mensalidades vencidas e vincendas.</p>
+        ${slot('d2')}
+        <p>Entende a PITZI, portanto, já ter sido cumprida a solicitação da parte ${v.tratamento}.</p>` },
+    { id:'nao_estornado', label:'Cancelamento efetuado; estorno pendente por erro sistêmico',
+      docs:[{id:'d1',label:'E-mail de aviso da renovação'},{id:'d2',label:'Confirmação do cancelamento'}],
+      texto:(v)=>`
+        <p>Um mês antes do vencimento da proteção, a PITZI enviou e-mail à parte ${v.tratamento} informando sobre a renovação automática e disponibilizando link para cancelamento, nos termos do art. 774 do Código Civil.</p>
+        ${slot('d1')}
+        <p>Em ${D(v.dataRenovacao,'data')}, passados ${V(v.numDias,'nº')} dias da renovação, a parte ${v.tratamento} solicitou o cancelamento e o estorno. O cancelamento foi efetuado imediatamente, mas por erro sistêmico não foi possível processar o estorno da quantia de R$ ${V(v.valor,'valor')}.</p>
+        ${slot('d2')}
+        <p>A PITZI, tão logo informada dos dados bancários (nome completo, CPF, banco, agência e conta corrente), efetuará o depósito da quantia devida, a título de devolução do valor pago pelo cartão.</p>` },
+    { id:'sem_solicitacao', label:'Nenhuma solicitação de cancelamento recebida até a presente reclamação',
+      docs:[{id:'d1',label:'E-mail de aviso da renovação'}],
+      texto:(v)=>`
+        <p>A PITZI enviou e-mail à parte ${v.tratamento} um mês antes do vencimento, informando sobre a renovação automática e disponibilizando link para cancelamento, nos termos do art. 774 do Código Civil.</p>
+        ${slot('d1')}
+        <p>Não há, até a presente data, qualquer registro de contato da parte ${v.tratamento} solicitando o cancelamento da proteção antes desta reclamação. Ainda assim, a PITZI compreende a insatisfação manifestada e oferece o ressarcimento integral por meio de depósito na quantia de R$ ${V(v.valor,'valor')}, mediante fornecimento dos dados bancários de titularidade da parte ${v.tratamento}.</p>` },
+    { id:'chargeback', label:'Cancelamento solicitado via chargeback junto à administradora do cartão',
+      docs:[{id:'d1',label:'Comprovante da solicitação de chargeback'}],
+      texto:(v)=>`
+        <p>Em ${D(v.dataRenovacao,'data')}, passados ${V(v.numDias,'nº')} dias da renovação automática, a PITZI foi informada sobre solicitação de chargeback* junto ao banco emissor do cartão da parte ${v.tratamento}. A quantia de R$ ${V(v.valor,'valor')} foi integralmente devolvida pela PITZI e estornada como crédito na fatura do cartão pela própria administradora.</p>
+        ${slot('d1')}
+        <p style="font-size:12px;color:var(--ink-3)">*Chargeback ocorre quando uma cobrança é contestada pelo titular do cartão junto à instituição financeira, que promove a reversão do pagamento.</p>
+        <p>Entende a PITZI, portanto, já ter sido cumprida a solicitação da parte ${v.tratamento}.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'cancel_nao_efetuado', numero:'05', grupo:'Cobrança e Cancelamento',
+  titulo:'Cancelamento solicitado e não efetuado',
+  quandoUsar:'Consumidor alega ter pedido o cancelamento da proteção, mas este não foi processado (ou não há registro do pedido).',
+  alegacaoDefault:'A parte alega que solicitou o cancelamento da proteção, mas este não foi efetivado, requerendo o cancelamento e o estorno das quantias pagas.',
+  baseCasos:'Modelo interno 7-P/7-J (Jurídico Pitzi)',
+  camposExtras:[
+    {key:'dataSolicitacao', label:'Data da solicitação de cancelamento', type:'date'},
+    {key:'valor', label:'Valor a estornar (R$)', type:'text'},
+  ],
+  ramos:[
+    { id:'sem_registro', label:'Sem registro do pedido — cancelamento providenciado agora',
+      docs:[{id:'d1',label:'Confirmação do cancelamento processado'}],
+      texto:(v)=>`
+        <p>A PITZI não possui registro de contato da parte ${v.tratamento} solicitando o cancelamento da proteção anteriormente a esta reclamação. Não obstante, atendendo à presente solicitação, a PITZI procedeu com o cancelamento do plano.</p>
+        ${slot('d1')}
+        <p>Solicita-se à parte ${v.tratamento} o fornecimento dos dados bancários (nome completo, CPF, banco, agência e conta corrente) para a realização do depósito na quantia de R$ ${V(v.valor,'valor')}, a título de devolução da quantia paga pelo cartão, cobrindo as mensalidades vencidas e vincendas.</p>` },
+    { id:'ja_efetuado', label:'Cancelamento e estorno já efetuados conforme solicitado',
+      docs:[{id:'d1',label:'Confirmação do cancelamento'},{id:'d2',label:'Comprovante do estorno'}],
+      texto:(v)=>`
+        <p>Em ${D(v.dataSolicitacao,'data')}, a parte ${v.tratamento} entrou em contato com o time de atendimento da PITZI solicitando o cancelamento e o estorno da proteção. A fornecedora, atendendo à solicitação, procedeu com o cancelamento do plano e com o estorno do valor na quantia de R$ ${V(v.valor,'valor')}.</p>
+        ${slot('d1')}${slot('d2')}
+        <p>O depósito foi efetuado a título de devolução da quantia paga pelo cartão, cobrindo as mensalidades vencidas e vincendas, cabendo à parte ${v.tratamento}, a seu critério, solicitar a antecipação das parcelas geradas junto à sua operadora. Resta comprovado, portanto, que o requerimento já foi integralmente cumprido.</p>` },
+    { id:'pendente_erro', label:'Cancelamento efetuado; estorno pendente por erro sistêmico',
+      docs:[{id:'d1',label:'Confirmação do cancelamento'}],
+      texto:(v)=>`
+        <p>Em ${D(v.dataSolicitacao,'data')}, a parte ${v.tratamento} solicitou o cancelamento e o estorno da proteção. O cancelamento foi efetuado imediatamente, porém, por erro sistêmico, não foi possível processar o estorno da quantia de R$ ${V(v.valor,'valor')}.</p>
+        ${slot('d1')}
+        <p>A PITZI se propõe a efetuar o depósito devido tão logo sejam informados os dados bancários de titularidade da parte ${v.tratamento}.</p>` },
+    { id:'protecao_vencida', label:'Proteção já vencida — pedido naturalmente extinto',
+      docs:[],
+      texto:(v)=>`
+        <p>Em ${D(v.dataSolicitacao,'data')}, o plano de proteção já se encontrava vencido, finalizado o prazo de atendimento e as cobranças do prêmio, restando comprovado que o requerimento da parte ${v.tratamento} já se encontra satisfeito por decurso natural do prazo contratual.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'cobranca_apos_cancel', numero:'06', grupo:'Cobrança e Cancelamento',
+  titulo:'Cobrança após cancelamento',
+  quandoUsar:'Consumidor alega ter sido cobrado mesmo após o cancelamento da proteção.',
+  alegacaoDefault:'A parte alega ter sido cobrada indevidamente mesmo após o cancelamento da proteção, requerendo a restituição dos valores.',
+  baseCasos:'Modelo interno 12-P/12-J (Jurídico Pitzi)',
+  camposExtras:[
+    {key:'valor', label:'Valor questionado (R$)', type:'text'},
+    {key:'dataIndenizacao', label:'Data da indenização anterior (se houver)', type:'date'},
+  ],
+  ramos:[
+    { id:'indevida_corrigida', label:'Cobrança indevida identificada — estorno já providenciado',
+      docs:[{id:'d1',label:'Comprovante do estorno'}],
+      texto:(v)=>`
+        <p>Identificada a cobrança indevida após o cancelamento do plano, a PITZI procedeu com o estorno integral da quantia de R$ ${V(v.valor,'valor')}, a título de crédito cobrindo os valores já lançados no cartão da parte ${v.tratamento}.</p>
+        ${slot('d1')}
+        <p>Entende a fornecedora, portanto, já ter sido sanada a irregularidade, não havendo que se falar em dano material adicional além da simples devolução, tampouco em dano moral, ausente conduta de má-fé.</p>` },
+    { id:'indenizada_sem_pagar', label:'Consumidor foi indenizado e não concluiu o pagamento do prêmio (má-fé)',
+      docs:[{id:'d1',label:'Comprovante da indenização (bem remanufaturado enviado)'}],
+      texto:(v)=>`
+        <p>A aquisição do plano se deu mediante expedição de apólice com as condições da proteção e pagamento do prêmio parcelado no cartão. Em ${D(v.dataIndenizacao,'data')}, a parte ${v.tratamento} abriu pedido de serviço, tendo sido devidamente indenizada pela PITZI por meio da reposição por bem remanufaturado.</p>
+        ${slot('d1')}
+        <p>Nos termos do art. 757 do Código Civil, a condição para que o segurado seja indenizado é o pagamento do prêmio. Entende a PITZI que, após paga a indenização, cabe à parte ${v.tratamento} concluir o pagamento do prêmio, sob pena de descumprir sua contraprestação e agir em desconformidade com o dever de boa-fé e veracidade previsto no art. 765 do Código Civil.</p>` },
+    { id:'chargeback', label:'Cobrança contestada via chargeback',
+      docs:[{id:'d1',label:'Comprovante da solicitação de chargeback'}],
+      texto:(v)=>`
+        <p>A fornecedora foi informada sobre solicitação de chargeback promovida pela parte ${v.tratamento} junto ao banco responsável pela cobrança. A quantia de R$ ${V(v.valor,'valor')} foi integralmente devolvida e estornada à conta da parte ${v.tratamento}.</p>
+        ${slot('d1')}
+        <p>Entende a PITZI, portanto, já ter sido cumprida a solicitação.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'nao_recebeu_estorno', numero:'07', grupo:'Cobrança e Cancelamento',
+  titulo:'Não recebeu o estorno',
+  quandoUsar:'Consumidor alega que o cancelamento foi feito, mas o valor não foi estornado — comum em compras via marketplace (Amazon/Mercado Livre).',
+  alegacaoDefault:'A parte alega que, apesar do cancelamento da compra/proteção, não recebeu o estorno dos valores pagos.',
+  baseCasos:'Vitor Mendes Brasileiro (Amazon GE)',
+  camposExtras:[
+    {key:'dataCancelamento', label:'Data do cancelamento', type:'date'},
+    {key:'valor', label:'Valor do estorno (R$)', type:'text'},
+  ],
+  ramos:[
+    { id:'dentro_prazo', label:'Estorno dentro do prazo da operadora — ônus da prova das faturas',
+      docs:[{id:'d1',label:'Print da política de reembolso do marketplace'},{id:'d2',label:'Registro do cancelamento em sistema'}],
+      texto:(v)=>`
+        <p>Nesse modelo de parceria, os procedimentos de contratação, cancelamento e reembolso de valores são operacionalizados diretamente pela plataforma parceira, de modo que a atuação da PITZI se limita às questões relacionadas à proteção contratada.</p>
+        <p>As Garantias Estendidas contratadas pela parte ${v.tratamento} constam canceladas em sistema desde ${D(v.dataCancelamento,'data')}. A devolução dos valores segue a política de estorno da própria parceira, a depender da modalidade de pagamento adotada, cujo prazo médio é de até duas faturas subsequentes ao cancelamento.</p>
+        ${slot('d1')}${slot('d2')}
+        <p>Compete à parte ${v.tratamento}, portanto, acompanhar em sua fatura o lançamento do crédito e, se for o caso, solicitar a antecipação das parcelas programadas junto à sua instituição financeira. Requer-se a intimação da parte ${v.tratamento} para que apresente as faturas dos meses subsequentes ao cancelamento, providência indispensável para evidenciar eventual ausência de estorno, ônus que lhe incumbe nos termos do art. 373, I, do CPC.</p>
+        <p>Ressalta-se, ainda, a ausência de qualquer tentativa de contato da parte ${v.tratamento} com os canais próprios da PITZI antes do ajuizamento, o que revela judicialização prematura da controvérsia.</p>` },
+    { id:'ja_processado', label:'Estorno já processado — comprovante disponível',
+      docs:[{id:'d1',label:'Comprovante do estorno/crédito na fatura'}],
+      texto:(v)=>`
+        <p>Verifica-se que o estorno da quantia de R$ ${V(v.valor,'valor')}, referente ao cancelamento ocorrido em ${D(v.dataCancelamento,'data')}, já foi processado e creditado na fatura da parte ${v.tratamento}, conforme comprovante em anexo.</p>
+        ${slot('d1')}
+        <p>Entende a PITZI, portanto, já ter sido cumprida a obrigação de devolução, não havendo que se falar em dano material ou moral.</p>` },
+  ]
+});
+
+/* ============================= GRUPO 3: SINISTRO E ATENDIMENTO (SR) ============================= */
+
+addMotivo({
+  id:'sr_rejeitada_doc', numero:'08', grupo:'Sinistro e Atendimento (SR)',
+  titulo:'SR rejeitada — documentação',
+  quandoUsar:'Pedido de serviço/sinistro foi rejeitado por pendência documental: IMEI não bloqueado, BO incompleto ou conta iCloud/Mi Cloud ativa.',
+  alegacaoDefault:'A parte alega ter sido injustamente impedida de utilizar a proteção contratada em razão da negativa de atendimento do sinistro.',
+  baseCasos:'Edenice de Jesus Silva · Luis Henrique Muxfeldt Gutterres',
+  camposExtras:[
+    {key:'dataSinistro', label:'Data de abertura do sinistro', type:'date'},
+    {key:'dataNotificacao', label:'Data da notificação sobre a pendência', type:'date'},
+  ],
+  ramos:[
+    { id:'imei', label:'IMEI não bloqueado (roubo/furto)',
+      docs:[{id:'d1',label:'Cláusula do bilhete — documentação necessária para roubo/furto'},{id:'d2',label:'Print da consulta ANATEL sem restrição de uso'},{id:'d3',label:'E-mails de notificação sobre a pendência'}],
+      texto:(v)=>`
+        <p>O bilhete apresentado pela parte ${v.tratamento} exige, na cláusula de documentação necessária para o aviso de sinistro, a apresentação da comprovação de bloqueio do IMEI em casos de roubo/furto.</p>
+        ${slot('d1')}
+        <p>Em ${D(v.dataSinistro,'data')}, a parte ${v.tratamento} abriu sinistro indicando ter sido vítima de roubo/furto, porém não apresentou o comprovante de bloqueio do IMEI. Em ${D(v.dataNotificacao,'data')}, a fornecedora notificou a parte ${v.tratamento} sobre a necessidade de realizar o bloqueio para prosseguimento do pedido.</p>
+        ${slot('d3')}
+        <p>Após tentativas de regularização sem êxito, o pedido foi interrompido. Conforme consulta ao site da ANATEL, o IMEI do aparelho permanece sem impedimentos de uso até o momento, o que impossibilita a fornecedora de dar seguimento ao atendimento.</p>
+        ${slot('d2')}
+        <p>A exigência não é abusiva: o bloqueio visa identificar o aparelho, impedir uso por terceiros não autorizados, coibir comercialização irregular e resguardar dados sensíveis do consumidor, em consonância com o art. 771 do Código Civil e, atualmente, o art. 66 da Lei n.º 15.040/2024, que impõe ao segurado o dever de tomar as providências necessárias para minorar os efeitos do sinistro, sob pena de perda do direito à indenização.</p>` },
+    { id:'bo_incompleto', label:'Boletim de Ocorrência incompleto ou ilegível',
+      docs:[{id:'d1',label:'Cláusula do bilhete — documentação necessária'},{id:'d2',label:'BO incompleto/ilegível anexado ao pedido'},{id:'d3',label:'E-mails de notificação sobre a pendência'}],
+      texto:(v)=>`
+        <p>O bilhete apresentado pela parte ${v.tratamento} exige, para casos de roubo/furto, a apresentação do registro de ocorrência policial.</p>
+        ${slot('d1')}
+        <p>Em ${D(v.dataSinistro,'data')}, a parte ${v.tratamento} abriu sinistro indicando ter sido vítima de roubo/furto, porém não apresentou registro de ocorrência policial completo e legível.</p>
+        ${slot('d2')}
+        <p>Em ${D(v.dataNotificacao,'data')}, a fornecedora notificou a parte ${v.tratamento} sobre a necessidade de envio da documentação completa e legível para prosseguimento do pedido. Após três tentativas improcedentes de regularização, o pedido foi interrompido.</p>
+        ${slot('d3')}
+        <p>A negativa possui previsão expressa no contrato, não havendo que se falar em qualquer indenização por danos materiais ou morais — a proteção permanece ativa, podendo a parte ${v.tratamento} abrir novo sinistro desde que cumprida a exigência contratual.</p>` },
+    { id:'icloud', label:'Conta iCloud/Mi Cloud ativa no aparelho (LGPD)',
+      docs:[{id:'d1',label:'Print da tela do aparelho logado'}],
+      texto:(v)=>`
+        <p>A parte ${v.tratamento} abriu sinistro solicitando a reparação do aparelho. No momento da regulação, identificou-se que o aparelho estava com a conta iCloud/Mi Cloud ativa, ou seja, com a conta pessoal da parte logada.</p>
+        ${slot('d1')}
+        <p>De acordo com a Lei Geral de Proteção de Dados (LGPD), a PITZI, como representante da seguradora, não possui autorização para manipular um aparelho logado, visto não poder acessar os dados pessoais sensíveis do usuário. Por essa razão, foi informado à parte ${v.tratamento} que o aparelho deveria ter a conta desvinculada, concedendo-se prazo de 30 dias para o procedimento — remoto, mediante acesso ao site do iCloud/Mi Cloud com login e senha da própria parte.</p>
+        <p>Transcorrido o prazo sem a desativação, o pedido foi cancelado automaticamente pelo sistema, com indicação clara do motivo da rejeição. Entende a PITZI ter agido com clareza e boa-fé, permanecendo o plano ativo e habilitado para novo pedido, desde que cumprida a exigência de desvinculação da conta.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'sr_rejeitada_cobertura', numero:'09', grupo:'Sinistro e Atendimento (SR)',
+  titulo:'SR rejeitada — sem cobertura',
+  quandoUsar:'O evento relatado (quebra, roubo, furto) não está entre os riscos cobertos pelo plano contratado.',
+  alegacaoDefault:'A parte alega ter sido injustamente negada em seu pedido de atendimento, apesar de possuir a proteção contratada.',
+  baseCasos:'Modelo interno 8-P/8-J (Jurídico Pitzi)',
+  camposExtras:[
+    {key:'coberturaContratada', label:'Cobertura efetivamente contratada', type:'text', ph:'ex.: apenas quebra de tela'},
+    {key:'eventoRelatado', label:'Evento relatado pelo consumidor', type:'text', ph:'ex.: roubo/furto'},
+  ],
+  ramos:[
+    { id:'so_tela', label:'Cobertura restrita à quebra de tela — evento fora do risco contratado',
+      docs:[{id:'d1',label:'Cláusulas de cobertura do contrato/bilhete'},{id:'d2',label:'Laudo técnico ou imagens do dano relatado'}],
+      texto:(v)=>`
+        <p>O contrato é claro ao estipular as coberturas do plano contratado, restrito a ${V(v.coberturaContratada,'quebra de tela')}.</p>
+        ${slot('d1')}
+        <p>Em data do sinistro, a parte ${v.tratamento} abriu pedido relatando ${V(v.eventoRelatado,'evento não coberto')}, porém, como se comprova no laudo/imagens em anexo, a PITZI precisou rejeitar o pedido em razão de o motivo relatado não estar contemplado pela cobertura prevista.</p>
+        ${slot('d2')}
+        <p>Dito isso, resta comprovada a ciência da parte ${v.tratamento} quanto à impossibilidade de atendimento para além do risco coberto, vez que recebeu, no ato da contratação, acesso pleno às condições contratuais.</p>` },
+    { id:'sem_roubo_furto', label:'Sem cobertura para roubo/furto',
+      docs:[{id:'d1',label:'Cláusulas de cobertura do contrato/bilhete'}],
+      texto:(v)=>`
+        <p>Conforme se depreende do bilhete de seguro e dos e-mails de contratação, não foi estipulado que o plano contratado pela parte ${v.tratamento} garantia proteção para os casos de roubo e furto, mas apenas para ${V(v.coberturaContratada,'cobertura contratada')}.</p>
+        ${slot('d1')}
+        <p>Nesse sentido, a fornecedora entende que o atendimento não ocorreu devido à ausência de cobertura contratual para o evento relatado, não havendo que se falar em falha na prestação do serviço.</p>` },
+    { id:'renovada_sem_cobertura', label:'Vigência renovada não incluía a cobertura pleiteada',
+      docs:[{id:'d1',label:'E-mail de renovação com as novas condições'}],
+      texto:(v)=>`
+        <p>Um mês antes do vencimento da proteção anterior, a PITZI enviou e-mail à parte ${v.tratamento} sobre a possibilidade de manter o aparelho protegido, disponibilizando link para eventual cancelamento, em consonância com o art. 774 do Código Civil.</p>
+        ${slot('d1')}
+        <p>Após anuência tácita, a cobrança da renovação foi efetuada nas novas condições, que não contemplavam a cobertura de ${V(v.eventoRelatado,'evento relatado')}, não havendo, portanto, falha da fornecedora na negativa do atendimento.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'franquia', numero:'10', grupo:'Sinistro e Atendimento (SR)',
+  titulo:'Não concorda com a franquia/taxa de utilização',
+  quandoUsar:'Consumidor questiona ou alega desconhecer a necessidade de pagar a franquia/Taxa de Utilização (P.O.S.) para ser atendido.',
+  alegacaoDefault:'A parte alega desconhecer a necessidade do pagamento da franquia em caso de sinistro, requerendo atendimento sem a cobrança.',
+  baseCasos:'Modelo interno 2-P/2-J (Jurídico Pitzi)',
+  camposExtras:[
+    {key:'percentualFranquia', label:'Percentual da franquia', type:'text', ph:'ex.: 15%'},
+    {key:'valorBem', label:'Valor do bem segurado (R$)', type:'text'},
+    {key:'valorFranquia', label:'Valor da franquia calculada (R$)', type:'text'},
+  ],
+  ramos:[
+    { id:'sem_sr', label:'Sem SR aberta — orientação sobre o pagamento',
+      docs:[{id:'d1',label:'Cláusula do bilhete sobre franquia/P.O.S.'}],
+      texto:(v)=>`
+        <p>O contrato é claro ao estipular a necessidade de pagamento de franquia em caso de sinistro, na quantia de ${V(v.percentualFranquia,'percentual')} do valor do bem indenizado. Considerando o valor do bem protegido (R$ ${V(v.valorBem,'valor')}), a franquia corresponde a R$ ${V(v.valorFranquia,'valor')}.</p>
+        ${slot('d1')}
+        <p>Resta comprovada a ciência da parte ${v.tratamento} quanto à necessidade de pagamento da franquia, vez que recebeu acesso pleno às condições contratuais no ato da contratação. A PITZI permanece à disposição para prestar o atendimento tão logo aberto o sinistro e efetuado o pagamento previsto em contrato.</p>` },
+    { id:'sr_aguardando', label:'SR aberta aguardando o pagamento — link disponível',
+      docs:[{id:'d1',label:'Cláusula do bilhete sobre franquia/P.O.S.'}],
+      texto:(v)=>`
+        <p>Foi estabelecido em contrato que, em caso de sinistro, a parte ${v.tratamento} deve arcar com a franquia/taxa de utilização de ${V(v.percentualFranquia,'percentual')} sobre o valor do bem indenizado, totalizando R$ ${V(v.valorFranquia,'valor')}.</p>
+        ${slot('d1')}
+        <p>A PITZI permanece à disposição para prestar o atendimento após o pagamento da franquia, disponível mediante acesso ao link enviado por e-mail à parte ${v.tratamento}.</p>` },
+    { id:'order_vencida', label:'Order/proteção vencida — sem possibilidade de nova abertura',
+      docs:[],
+      texto:(v)=>`
+        <p>A proteção da parte ${v.tratamento} encontra-se atualmente vencida, não estando habilitada para abertura de novos pedidos de serviço. Sendo assim, a fornecedora não entende cabível a isenção da taxa de serviço questionada, uma vez que a parte possuía ciência dos termos acordados e não procedeu ao pagamento por mera deliberalidade própria, dentro do prazo de vigência.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'lmi_consumido', numero:'11', grupo:'Sinistro e Atendimento (SR)',
+  titulo:'LMI já consumido',
+  quandoUsar:'Novo sinistro é negado porque o Limite Máximo de Indenização (LMI) do plano já foi integralmente utilizado em atendimento anterior.',
+  alegacaoDefault:'A parte alega ter recebido negativa de atendimento em razão da utilização total do Limite Máximo Indenizável da proteção.',
+  baseCasos:'Luiz Felipe Ferreira dos Santos (Mercado Livre) · Agnaldo Martins da Silva Filho · Patrício Sândalo de Rezende',
+  camposExtras:[
+    {key:'dataPrimeiroSinistro', label:'Data do 1º sinistro (que consumiu o LMI)', type:'date'},
+    {key:'motivoPrimeiroSinistro', label:'Motivo do 1º sinistro', type:'select', options:['Roubo/Furto (perda total)','Quebra (2ª utilização)']},
+    {key:'modeloReposicao', label:'Modelo do aparelho de reposição enviado', type:'text'},
+    {key:'dataReposicao', label:'Data de entrega da reposição', type:'date'},
+  ],
+  ramos:[
+    { id:'perda_total', label:'Perda total por roubo/furto consumiu o LMI integral',
+      docs:[{id:'d1',label:'Cláusula de LMI + Processo SUSEP do produto'},{id:'d2',label:'Comprovante da reposição anterior (rastreio/entrega)'}],
+      texto:(v)=>`
+        <p>Conforme previsão contratual e as Condições Gerais protocoladas junto à SUSEP, a cobertura contratada abrange uma utilização por roubo ou furto — que consome o Limite Máximo Indenizável (LMI) por se tratar de perda total — ou até duas utilizações por quebra, conforme a combinação prevista em bilhete.</p>
+        ${slot('d1')}
+        <p>No que tange ao LMI, após a indenização na forma de substituição do bem, nos termos do art. 776 do Código Civil, a indenização não pode, em hipótese alguma, ultrapassar o limite máximo indenizável determinado em bilhete — os arts. 778 e 781 do mesmo diploma vedam cláusula que estabeleça importância segurada superior ao valor do bem, já que o seguro possui natureza indenitária e não visa o enriquecimento do segurado.</p>
+        <p>A parte ${v.tratamento} já fez uso da proteção total em ${D(v.dataPrimeiroSinistro,'data')}, por ${V(v.motivoPrimeiroSinistro,'roubo/furto')}, consumindo o valor máximo indenizável com a substituição do bem sinistrado pelo aparelho ${V(v.modeloReposicao,'modelo')}, entregue em ${D(v.dataReposicao,'data')}.</p>
+        ${slot('d2')}
+        <p>Sendo assim, a fornecedora não entende cabível exceção para novo atendimento, uma vez que o contrato de proteção se extinguiu com a ocorrência do evento contratualmente previsto e sua integral indenização.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'furto_simples', numero:'12', grupo:'Sinistro e Atendimento (SR)',
+  titulo:'Furto simples x furto/roubo qualificado',
+  quandoUsar:'Sinistro de furto foi negado porque o Boletim de Ocorrência descreve furto simples (sem arrombamento/violência), evento fora da cobertura contratada de roubo/furto qualificado.',
+  alegacaoDefault:'A parte alega ter sofrido furto do bem segurado e questiona a negativa de indenização sob o fundamento de ausência de cobertura.',
+  baseCasos:'Raíssa Jhenifer Santos Barbosa (bicicleta — PROCON Acre)',
+  camposExtras:[
+    {key:'dataFurto', label:'Data do furto relatado', type:'date'},
+    {key:'protocoloNegativa', label:'Protocolo da comunicação de negativa', type:'text'},
+  ],
+  ramos:[
+    { id:'sem_arrombamento', label:'BO descreve furto simples, sem arrombamento/violência',
+      docs:[{id:'d1',label:'Boletim de Ocorrência policial'},{id:'d2',label:'Cláusula de riscos cobertos do bilhete'},{id:'d3',label:'E-mails de comunicação da negativa ao consumidor'}],
+      texto:(v)=>`
+        <p>Em ${D(v.dataFurto,'data')}, foi comunicado à PITZI o furto do bem segurado. Após o envio dos documentos, a análise do sinistro observou o Boletim de Ocorrência apresentado pela parte ${v.tratamento}, no qual a natureza do fato foi registrada como furto simples, enquadrado no art. 155, caput, do Código Penal, sem indicação de rompimento de obstáculo, arrombamento ou violência.</p>
+        ${slot('d1')}
+        <p>A negativa de cobertura decorreu do enquadramento objetivo do evento comunicado como furto simples — hipótese excluída das condições do produto contratado, que prevê cobertura apenas para roubo ou furto qualificado, conforme comunicado à parte ${v.tratamento} no protocolo n.º ${V(v.protocoloNegativa,'nº')} e ratificado pelo bilhete recebido no ato da aquisição.</p>
+        ${slot('d2')}${slot('d3')}
+        <p>Em contratos de proteção, a cobertura depende da estrita correspondência entre o fato narrado e os riscos assumidos, nos termos da apólice, do bilhete e das condições gerais. Não há ilicitude na recusa quando o evento comunicado se situa fora do âmbito da garantia contratada, sobretudo quando a descrição do sinistro, constante do próprio boletim de ocorrência, não revela elementos mínimos de rompimento de obstáculo ou violência que caracterizem furto qualificado ou roubo.</p>
+        <p>Ainda assim, agindo com boa-fé, transparência e cooperação, a PITZI se coloca à disposição para reabrir a análise do sinistro caso a parte ${v.tratamento} apresente imagens de câmeras de segurança, em boa resolução, que abranjam integralmente o momento do evento e o local de guarda do bem, e que eventualmente demonstrem circunstância distinta da constante do boletim de ocorrência.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'fraude_documental', numero:'13', grupo:'Sinistro e Atendimento (SR)',
+  titulo:'Fraude/inconsistência documental no sinistro',
+  quandoUsar:'A regulação do sinistro identificou contradições ou irregularidades na documentação apresentada (nota fiscal, IMEI, histórico), justificando a recusa da indenização.',
+  alegacaoDefault:'A parte cobra indenização securitária alegando que a documentação apresentada está correta e que a recusa da seguradora é infundada.',
+  baseCasos:'Contestação Elizangela Pitzi (Lei 15.040/2024, arts. 44, 66 e 69)',
+  camposExtras:[
+    {key:'dataContratacaoSeguro', label:'Data de contratação do seguro', type:'date'},
+    {key:'dataNotaFiscal', label:'Data de emissão da nota fiscal do bem', type:'date'},
+    {key:'dataSinistro', label:'Data do sinistro', type:'date'},
+    {key:'inconsistenciaDescricao', label:'Descreva a inconsistência identificada', type:'textarea', ph:'ex.: NF emitida após a contratação do seguro; NF indica pagamento em espécie para compra não presencial; IMEI desbloqueado 24h após o bloqueio (código FOUND)...'},
+  ],
+  ramos:[
+    { id:'nf_incoerente', label:'Nota fiscal com contradição lógica (data, forma de pagamento ou emitente)',
+      docs:[{id:'d1',label:'Nota fiscal contestada'},{id:'d2',label:'Comparativo de datas: contratação x nota fiscal'}],
+      texto:(v)=>`
+        <p>A apuração técnica identificou contradições materiais insanáveis na comprovação de aquisição do bem. O seguro foi contratado em ${D(v.dataContratacaoSeguro,'data')}; contudo, a nota fiscal de aquisição do aparelho foi emitida apenas em ${D(v.dataNotaFiscal,'data')} — ou seja, a parte ${v.tratamento} contratou proteção para um bem que, no momento da contratação, ainda não possuía comprovadamente.</p>
+        ${slot('d1')}${slot('d2')}
+        <p>O art. 44 da Lei n.º 15.040/2024 exige a prestação de informações verídicas na formação do contrato; a prestação de informação inverídica configura descumprimento do dever legal e determina a perda da garantia, nos termos do art. 44, § 1º, da mesma lei.</p>
+        <p>${V(v.inconsistenciaDescricao,'Descreva aqui a inconsistência específica identificada na documentação.')}</p>
+        <p>A apresentação de documento com informações conflitantes para fins de cobrança de indenização configura fraude na reclamação do sinistro, nos termos do art. 69, § 4º, da Lei n.º 15.040/2024, que libera a seguradora do dever de indenizar.</p>` },
+    { id:'imei_pos_sinistro', label:'Comportamento atípico do IMEI no pós-sinistro (desbloqueio suspeito)',
+      docs:[{id:'d1',label:'Print do registro de bloqueio junto à operadora'},{id:'d2',label:'Print do registro de desbloqueio (código FOUND/recuperado)'}],
+      texto:(v)=>`
+        <p>O sinistro ocorreu em ${D(v.dataSinistro,'data')}. A operadora registrou o bloqueio do IMEI do aparelho logo em seguida.</p>
+        ${slot('d1')}
+        <p>Em curto espaço de tempo após o bloqueio, a própria operadora efetuou o desbloqueio do IMEI, o que, por sua dinâmica operacional, não ocorre sem provocação e sem a apresentação do bem — indicando que alguém informou à operadora a recuperação do aparelho, informação que a parte ${v.tratamento} omitiu da seguradora.</p>
+        ${slot('d2')}
+        <p>${V(v.inconsistenciaDescricao,'Descreva aqui os detalhes específicos da omissão identificada.')}</p>
+        <p>O art. 66, § 1º, da Lei n.º 15.040/2024 penaliza com a perda do direito à indenização o segurado que descumpre dolosamente o dever de prestar informações sobre as consequências do sinistro. A PITZI agiu em estrito exercício regular de direito, tendo apurado as irregularidades dentro do prazo legal, comunicado a recusa e procedido ao estorno integral dos valores pagos a título de prêmio — não havendo conduta ilícita, falha na prestação do serviço ou dano a ser reparado.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'atraso_regulacao', numero:'14', grupo:'Sinistro e Atendimento (SR)',
+  titulo:'Atraso na regulação/indenização',
+  quandoUsar:'Consumidor reclama de demora além do prazo legal de 30 dias para a regulação do sinistro ou pagamento da indenização.',
+  alegacaoDefault:'A parte alega que acionou a proteção, mas não recebeu o reparo/substituição dentro do prazo legal de regulação.',
+  baseCasos:'Edmilson Resende dos Santos (PROCON BA) · Erika Leite Machado',
+  camposExtras:[
+    {key:'dataAprovacao', label:'Data de aprovação do sinistro', type:'date'},
+    {key:'motivoAtraso', label:'Motivo do atraso', type:'select', options:['Extravio nos Correios','Pendência documental do consumidor','Outro']},
+    {key:'dataEnvioNovo', label:'Data do reenvio/solução', type:'date'},
+  ],
+  ramos:[
+    { id:'extravio_correios', label:'Atraso por extravio nos Correios — novo envio às expensas da fornecedora',
+      docs:[{id:'d1',label:'Comprovante de aprovação do sinistro e primeiro envio'},{id:'d2',label:'Comprovante de rastreio/entrega do reenvio'}],
+      texto:(v)=>`
+        <p>Após o recebimento dos documentos para análise e regulação, o pedido foi aprovado em ${D(v.dataAprovacao,'data')}, tendo a fornecedora procedido, ainda antes do recebimento do aparelho danificado, com o envio de um novo aparelho.</p>
+        ${slot('d1')}
+        <p>Na data estimada para a chegada do bem, os Correios noticiaram o extravio da remessa postal. Diante do ocorrido, a PITZI disponibilizou novo aparelho ao consumidor, às suas expensas, entregue em ${D(v.dataEnvioNovo,'data')}.</p>
+        ${slot('d2')}
+        <p>A seguradora dispõe de 30 dias, a contar da apresentação de todos os documentos básicos, para efetuar a substituição do bem ou o pagamento devido, conforme o art. 43 da Circular SUSEP n.º 621/2021 e o art. 87 da Lei n.º 15.040/2024. Entende a PITZI ter agido com clareza e diligência, não tendo o atendimento ocorrido no prazo regular apenas em razão de extravio ocasionado por terceiro (Correios), circunstância alheia à sua conduta.</p>` },
+    { id:'pendencia_consumidor', label:'Atraso decorrente de pendência documental do próprio consumidor',
+      docs:[{id:'d1',label:'E-mails/mensagens solicitando a documentação pendente'}],
+      texto:(v)=>`
+        <p>A fornecedora trabalha para atender seus clientes com máxima celeridade, respeitando o prazo de 30 dias previsto no art. 87 da Lei n.º 15.040/2024 e no art. 43 da Circular SUSEP n.º 621/2021, contado da apresentação de todos os documentos básicos pertinentes.</p>
+        <p>No caso em tela, o atraso na conclusão da regulação decorreu da necessidade de regularização de documentação pendente por parte do próprio consumidor, conforme diversas comunicações enviadas.</p>
+        ${slot('d1')}
+        <p>Entende a PITZI, portanto, que o prazo legal apenas voltou a correr a partir da efetiva regularização da pendência, não havendo falha na prestação do serviço.</p>` },
+  ]
+});
+
+/* ============================= GRUPO 4: INDENIZAÇÃO E REPOSIÇÃO ============================= */
+
+addMotivo({
+  id:'reincidencia_funcional', numero:'15', grupo:'Indenização e Reposição',
+  titulo:'Reincidência funcional',
+  quandoUsar:'O aparelho enviado como reposição/reparo apresentou novo defeito funcional pouco tempo depois, e o consumidor pede nova solução.',
+  alegacaoDefault:'A parte alega que o aparelho recebido como indenização/reparo voltou a apresentar defeito funcional.',
+  baseCasos:'Erika Leite Machado (Telmix — Grande Rio)',
+  camposExtras:[
+    {key:'dataIndenizacaoAnterior', label:'Data da indenização/reparo anterior', type:'date'},
+    {key:'modeloAnterior', label:'Modelo/IMEI enviado anteriormente', type:'text'},
+    {key:'dataNovoContato', label:'Data do novo contato relatando defeito', type:'date'},
+  ],
+  ramos:[
+    { id:'atendida', label:'Nova SR foi aberta e devidamente atendida (troca realizada)',
+      docs:[{id:'d1',label:'Comprovante da indenização/reparo anterior'},{id:'d2',label:'Comprovante da nova troca (rastreio/entrega)'}],
+      texto:(v)=>`
+        <p>Em ${D(v.dataIndenizacaoAnterior,'data')}, a parte ${v.tratamento} abriu sinistro, tendo a PITZI indenizado com o envio do aparelho ${V(v.modeloAnterior,'modelo/IMEI')}.</p>
+        ${slot('d1')}
+        <p>Em ${D(v.dataNovoContato,'data')}, a parte ${v.tratamento} entrou em contato relatando novo defeito funcional no aparelho recebido. A fornecedora, trabalhando para atender com máxima celeridade, abriu nova solicitação de troca e, após aprovação dos documentos, procedeu ao envio de novo aparelho, testado e funcional.</p>
+        ${slot('d2')}
+        <p>A seguradora dispõe de 30 dias, a contar da apresentação de todos os documentos básicos, para efetuar a substituição, conforme o art. 43 da Circular SUSEP n.º 621/2021. Entende a PITZI ter cumprido integralmente sua obrigação contratual, com boa-fé e celeridade, não havendo que se falar em dano material ou moral.</p>` },
+    { id:'interrompida_doc', label:'Reincidência interrompida por falta de documentação/envio do consumidor',
+      docs:[{id:'d1',label:'Comprovante da indenização anterior'},{id:'d2',label:'Comunicações solicitando documentação/envio do aparelho'}],
+      texto:(v)=>`
+        <p>Em ${D(v.dataIndenizacaoAnterior,'data')}, a parte ${v.tratamento} foi indenizada com o envio do aparelho ${V(v.modeloAnterior,'modelo/IMEI')}.</p>
+        ${slot('d1')}
+        <p>Em ${D(v.dataNovoContato,'data')}, a parte ${v.tratamento} relatou novo defeito funcional. A fornecedora requereu documentação comprobatória a fim de abrir nova solicitação de troca; contudo, a parte ${v.tratamento} não deu seguimento à solicitação, tampouco procedeu ao envio do aparelho defeituoso pelo código de postagem disponibilizado.</p>
+        ${slot('d2')}
+        <p>Nesse sentido, a PITZI se dispõe a realizar a troca do aparelho tão logo comprovado o defeito e recebido o bem para análise, permanecendo a proposta de solução em aberto por mera deliberalidade da parte ${v.tratamento}.</p>` },
+    { id:'mais_90_dias', label:'Mais de 90 dias da entrega do bem (art. 26, II, CDC)',
+      docs:[{id:'d1',label:'Comprovante de entrega do aparelho'}],
+      texto:(v)=>`
+        <p>Em ${D(v.dataIndenizacaoAnterior,'data')}, a PITZI procedeu à indenização com a entrega do aparelho ${V(v.modeloAnterior,'modelo/IMEI')}.</p>
+        ${slot('d1')}
+        <p>Verifica-se que o presente contato/reclamação foi formalizado quando já transcorridos mais de 90 (noventa) dias da entrega do bem. O art. 26, II, do Código de Defesa do Consumidor institui o prazo decadencial de 90 dias para o consumidor reclamar por vícios aparentes ou de fácil constatação em produtos duráveis, prazo esse já esgotado.</p>
+        <p>Entende a PITZI ter expirado o prazo legal para requerer a troca do aparelho ou a devolução da quantia paga.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'reincidencia_modelo', numero:'16', grupo:'Indenização e Reposição',
+  titulo:'Reincidência de modelo (aparelho inferior)',
+  quandoUsar:'Consumidor alega que o aparelho recebido como indenização é de categoria/valor inferior ao aparelho segurado.',
+  alegacaoDefault:'A parte alega que, ao acionar a proteção para reparo, recebeu como indenização um aparelho de categoria inferior ao bem protegido.',
+  baseCasos:'Modelo interno 13-P/13-J (Jurídico Pitzi)',
+  camposExtras:[
+    {key:'modeloSegurado', label:'Modelo do aparelho segurado', type:'text'},
+    {key:'modeloEnviado', label:'Modelo do aparelho enviado como reposição', type:'text'},
+    {key:'dataAcionamento', label:'Data do acionamento do sinistro', type:'date'},
+    {key:'dataEnvio', label:'Data de entrega da reposição', type:'date'},
+  ],
+  ramos:[
+    { id:'igual_superior', label:'Aparelho enviado é de categoria igual/superior (cláusula + Processo SUSEP)',
+      docs:[{id:'d1',label:'Cláusula do bilhete sobre reposição por bem igual/similar/superior'},{id:'d2',label:'Processo SUSEP do produto (consulta pública)'},{id:'d3',label:'Nota fiscal do aparelho enviado + comprovante de entrega'}],
+      texto:(v)=>`
+        <p>Conforme se depreende do contrato (bilhete) recebido pela parte ${v.tratamento} no ato da contratação, evidencia-se a possibilidade de substituição do aparelho danificado por outro igual, similar ou superior, em total alinho com o art. 776 do Código Civil ("O segurador é obrigado a pagar em dinheiro o prejuízo resultante do risco assumido, salvo se convencionada a reposição da coisa").</p>
+        ${slot('d1')}
+        <p>A previsão consta também do processo protocolizado junto à SUSEP relativo ao plano de proteção, disponível para consulta pública no sítio eletrônico da autarquia, que preconiza a admissão da reposição por bem idêntico ou similar até o Limite Máximo de Indenização contratado.</p>
+        ${slot('d2')}
+        <p>A PITZI trabalha para atender seus clientes com máxima celeridade, utilizando exclusivamente aparelhos testados, certificados e funcionais, com garantia de 90 dias que se estende até o final da vigência do contrato de proteção, se este for mais extenso, por liberalidade da fornecedora.</p>
+        <p>Em ${D(v.dataAcionamento,'data')}, a parte ${v.tratamento} acionou o sinistro relativo ao aparelho ${V(v.modeloSegurado,'modelo segurado')}. Após a regulação e aprovação, a fornecedora procedeu ao envio do aparelho ${V(v.modeloEnviado,'modelo enviado')}, de categoria e configurações iguais ou superiores ao bem protegido, entregue em ${D(v.dataEnvio,'data')}.</p>
+        ${slot('d3')}
+        <p>Isto posto, a fornecedora entende que o envio do aparelho, superior/equivalente, testado e completamente funcional, satisfaz o acordo celebrado entre as partes, não havendo que se falar em dano à parte ${v.tratamento}.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'nao_recebeu_aparelho', numero:'17', grupo:'Indenização e Reposição',
+  titulo:'Não recebeu o aparelho de reposição',
+  quandoUsar:'Consumidor pagou a franquia/foi aprovado no sinistro, mas alega não ter recebido o aparelho de indenização.',
+  alegacaoDefault:'A parte alega que acionou a proteção, efetuou o pagamento da franquia, mas não recebeu a indenização na forma de um aparelho.',
+  baseCasos:'Modelo interno 6-P/6-J (Jurídico Pitzi)',
+  camposExtras:[
+    {key:'motivoAcionamento', label:'Motivo do acionamento', type:'select', options:['Quebra/defeito','Roubo/furto']},
+    {key:'dataEnvio', label:'Data do envio pelos Correios', type:'date'},
+    {key:'codigoRastreio', label:'Código de rastreio', type:'text'},
+    {key:'enderecoEntrega', label:'Endereço de entrega cadastrado', type:'text'},
+  ],
+  ramos:[
+    { id:'entregue', label:'Entrega foi realizada e assinada — sem dano material',
+      docs:[{id:'d1',label:'Comprovante de postagem'},{id:'d2',label:'Comprovante de entrega assinado'}],
+      texto:(v)=>`
+        <p>A parte ${v.tratamento} abriu pedido de serviço por ${V(v.motivoAcionamento,'motivo')}. A PITZI confirmou, por e-mail, o envio de aparelho como forma de indenização, sob o código de rastreio ${V(v.codigoRastreio,'código')}, postado em ${D(v.dataEnvio,'data')}.</p>
+        ${slot('d1')}
+        <p>A entrega pelos Correios foi realizada, recebida conforme assinatura no endereço cadastrado.</p>
+        ${slot('d2')}
+        <p>Nesse sentido, entende a PITZI que a entrega foi efetivamente realizada, não cabendo compensação por danos materiais ou morais.</p>` },
+    { id:'devolvido_endereco', label:'Aparelho devolvido por erro de endereço — reenvio proposto',
+      docs:[{id:'d1',label:'Comprovante de devolução pelos Correios'},{id:'d2',label:'Comunicação solicitando confirmação do endereço'}],
+      texto:(v)=>`
+        <p>A parte ${v.tratamento} abriu pedido de serviço por ${V(v.motivoAcionamento,'motivo')}. Os Correios indicaram problema na entrega no endereço cadastrado (${V(v.enderecoEntrega,'endereço')}), sendo o aparelho devolvido à PITZI.</p>
+        ${slot('d1')}
+        <p>Após o recebimento da devolução, a fornecedora prontamente contatou a parte ${v.tratamento} por e-mail, solicitando a confirmação ou atualização do endereço para viabilizar o reenvio.</p>
+        ${slot('d2')}
+        <p>Nesse sentido, a PITZI se propõe a realizar o reenvio do aparelho ao endereço que vier a ser confirmado pela parte ${v.tratamento}, ou, alternativamente, oferta o pagamento do Limite Máximo de Indenização contratado, a título de danos materiais.</p>` },
+    { id:'sem_resposta', label:'Sem confirmação do consumidor após tentativas de contato',
+      docs:[{id:'d1',label:'Comprovante de devolução pelos Correios'},{id:'d2',label:'Registro das tentativas de contato'}],
+      texto:(v)=>`
+        <p>Após a devolução do aparelho à PITZI por problema de entrega no endereço cadastrado, a fornecedora tentou por diversas vezes contatar a parte ${v.tratamento}, buscando a confirmação ou alteração do endereço de entrega, sem obter resposta.</p>
+        ${slot('d1')}${slot('d2')}
+        <p>A PITZI permanece à disposição para o reenvio do aparelho a qualquer endereço que venha a ser informado pela parte ${v.tratamento}, ou, alternativamente, oferta o pagamento do Limite Máximo de Indenização contratado.</p>` },
+    { id:'indenizado_dinheiro', label:'Indenização em dinheiro já realizada (termo de quitação)',
+      docs:[{id:'d1',label:'Termo de quitação assinado/aceito'},{id:'d2',label:'Comprovante do depósito'}],
+      texto:(v)=>`
+        <p>Após a notificação do ocorrido, a fornecedora entrou em contato com a parte ${v.tratamento} e propôs a indenização em dinheiro, tendo a parte aceitado a oferta e anuído com o Termo de Quitação, no qual constam dispostas as condições da proposta.</p>
+        ${slot('d1')}
+        <p>O depósito foi realizado em ${D(v.dataEnvio,'data')}, conforme comprovante em anexo.</p>
+        ${slot('d2')}
+        <p>Nesse sentido, entende a fornecedora que a indenização foi devidamente realizada, inexistindo dano material ou moral à parte ${v.tratamento}.</p>` },
+  ]
+});
+
+addMotivo({
+  id:'nao_aceita_remanufaturado', numero:'18', grupo:'Indenização e Reposição',
+  titulo:'Não aceita aparelho remanufaturado',
+  quandoUsar:'Consumidor recusa a indenização por entender que deveria receber um aparelho novo, e não remanufaturado.',
+  alegacaoDefault:'A parte alega não concordar com o recebimento de aparelho remanufaturado como forma de indenização, requerendo aparelho novo ou devolução em dinheiro.',
+  baseCasos:'Modelo interno 11-P/11-J (Jurídico Pitzi)',
+  camposExtras:[],
+  ramos:[
+    { id:'clausula_anexada', label:'Consumidor anexou o bilhete com a cláusula de reposição na própria reclamação',
+      docs:[{id:'d1',label:'Cláusula do bilhete sobre forma de indenização (reposição/remanufaturado)'}],
+      texto:(v)=>`
+        <p>Conforme se depreende do documento anexado pela própria parte ${v.tratamento} em sua reclamação, o contrato prevê expressamente a possibilidade de indenização por meio de reposição do bem, inclusive por aparelho remanufaturado, quando prevista em contrato.</p>
+        ${slot('d1')}
+        <p>Tal procedimento está em total alinho com o art. 776 do Código Civil ("O segurador é obrigado a pagar em dinheiro o prejuízo resultante do risco assumido, salvo se convencionada a reposição da coisa"). Sendo assim, a PITZI entende ter efetuado o envio de aparelho testado e completamente funcional, de acordo com as condições gerais do contrato, não havendo que se falar em dano à parte ${v.tratamento}.</p>` },
+    { id:'susep_consultado', label:'Processo SUSEP consultado publicamente confirma a modalidade de reposição',
+      docs:[{id:'d1',label:'Processo SUSEP do produto (consulta pública)'},{id:'d2',label:'E-mail de acesso à área logada com o contrato'}],
+      texto:(v)=>`
+        <p>A parte ${v.tratamento} anexou em sua exordial o bilhete de seguro onde consta a indicação do processo SUSEP relativo ao seu plano de proteção. Por meio do sítio eletrônico da SUSEP, é possível consultar as condições completas desse plano.</p>
+        ${slot('d1')}
+        <p>Da consulta depreende-se que a seguradora realiza o reparo ou a indenização na forma de reposição do aparelho, sendo prevista a possibilidade de indenização por meio de bem remanufaturado quando prevista em contrato — condição também constante do e-mail de acesso à área logada enviado no dia da contratação.</p>
+        ${slot('d2')}
+        <p>Tal procedimento está em total alinho com o art. 776 do Código Civil. Entende a PITZI, portanto, ter demonstrado desde o início boa-fé no cumprimento da obrigação contratual, não havendo dano a ser reparado.</p>` },
+  ]
+});
+
+</script>
+<script>
+/* =========================================================================
+   CAMPOS COMUNS E POR TIPO DE PEÇA
+   ========================================================================= */
+const COMMON_FIELDS = [
+  {key:'nome', label:'Nome completo do consumidor', type:'text'},
+  {key:'cpf', label:'CPF', type:'text', ph:'000.000.000-00'},
+  {key:'cadastro', label:'Cadastro / Order (nº ou link)', type:'text'},
+  {key:'source', label:'Loja / canal de venda', type:'text', ph:'ex.: Amazon GE, Mercado Livre, nome da loja'},
+  {key:'modeloAparelho', label:'Modelo do aparelho', type:'text'},
+  {key:'imei', label:'IMEI', type:'text'},
+  {key:'dataAquisicao', label:'Data de aquisição do plano', type:'date'},
+];
+const PROCON_FIELDS = [
+  {key:'nomeProcon', label:'PROCON de destino', type:'text', ph:'ex.: PROCON SP'},
+  {key:'enderecoProcon', label:'Endereço do PROCON', type:'textarea', ph:'opcional'},
+  {key:'faCip', label:'FA / CIP / Nº de atendimento', type:'text'},
+  {key:'seguradoras', label:'Seguradoras representadas (institucional)', type:'text', default:'GAZIN, GENERALI e MAPFRE'},
+  {key:'assinante', label:'Assinatura', type:'text', default:'Jurídico Pitzi'},
+];
+const JUDICIAL_FIELDS = [
+  {key:'destinatarios', label:'Destinatários (escritório)', type:'text', default:'nreis@viseu.com.br; cadastrodigital@viseu.com.br; gmurakami@viseu.com.br; juridico@pitzi.com.br'},
+  {key:'numeroProcesso', label:'Nº do processo (se houver)', type:'text', ph:'opcional'},
+  {key:'assinante', label:'Assinatura', type:'text', default:'Jurídico Pitzi'},
+];
+
+/* =========================================================================
+   ESTADO
+   ========================================================================= */
+const state = {
+  tipo:'procon', motivoId:null, ramoId:null,
+  vars:{}, images:{}, editMode:false, search:'', mobileTab:'rail', pendingSlot:null,
+};
+
+function currentMotivo(){ return MOTIVOS.find(m=>m.id===state.motivoId) || null; }
+function currentRamo(){ const m=currentMotivo(); if(!m) return null; return m.ramos.find(r=>r.id===state.ramoId) || m.ramos[0]; }
+function computedVars(){ return Object.assign({}, state.vars, { tratamento: state.tipo==='procon' ? 'consumidora' : 'autora' }); }
+
+function parseMoney(s){
+  if(!s) return 0;
+  const n = String(s).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',', '.');
+  const f = parseFloat(n);
+  return isNaN(f) ? 0 : f;
+}
+function formatMoney(n){
+  return n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+/* =========================================================================
+   BLOCOS DE DOCUMENTO (cabeçalho / fechamento — comuns a todos os motivos)
+   ========================================================================= */
+function proconHeader(v, m){
+  const endereco = v.enderecoProcon ? esc(v.enderecoProcon).replace(/\n/g,'<br>') : '';
+  return `
+    <h1 class="doctitle">São Paulo, ${todayLong()}</h1>
+    <div class="addr-block">
+      <div class="to">À<br>${V(v.nomeProcon,'nome do PROCON')}${endereco?('<br>'+endereco):''}</div>
+    </div>
+    <p style="font-family:var(--sans);font-size:12.5px;color:var(--ink-3)">FA/CIP/Nº de Atendimento: ${V(v.faCip,'nº do atendimento')}</p>
+    <p><b>${V(v.nome,'NOME DO CONSUMIDOR')}</b>, CPF: ${V(v.cpf,'nº do CPF')}, apresentou reclamação em face da fornecedora PITZI REPARAÇÃO E MANUTENÇÃO DE EQUIPAMENTOS ELETRÔNICOS LTDA, CNPJ: 13.403.189/0001-05.</p>
+    <h2 class="sec">Sobre a fornecedora</h2>
+    ${SOBRE_FORNECEDORA(v)}
+    <h2 class="sec">Alegações iniciais</h2>
+    <p>${esc(v.alegacao || m.alegacaoDefault)}</p>`;
+}
+
+function judicialHeader(v, m){
+  return `
+    <p style="font-family:var(--sans);font-size:11.5px;color:var(--ink-3)">Para: ${V(v.destinatarios,'e-mails do escritório responsável')}</p>
+    <h2 class="sec">Parte autora</h2>
+    <div class="kv"><b>Nome:</b><span>${V(v.nome,'nome completo')}</span></div>
+    <div class="kv"><b>CPF:</b><span>${V(v.cpf,'nº do CPF')}</span></div>
+    <div class="kv"><b>Cadastro:</b><span>${V(v.cadastro,'nº do pedido / order')}</span></div>
+    <div class="kv"><b>Source:</b><span>${V(v.source,'loja / canal')}</span></div>
+    ${v.numeroProcesso? `<div class="kv"><b>Processo:</b><span>${esc(v.numeroProcesso)}</span></div>`:''}
+    <h2 class="sec">Alegações da parte autora</h2>
+    <p>${esc(v.alegacao || m.alegacaoDefault)}</p>
+    <h2 class="sec">Requisições da parte autora</h2>
+    ${reqTable(v)}`;
+}
+
+function reqTable(v){
+  const dm = parseMoney(v.danosMateriais), dmo = parseMoney(v.danosMorais);
+  const total = dm + dmo;
+  return `<table class="reqs-table">
+    <tr><td>1) Obrigação de fazer</td><td class="v">${v.pedidoObrigacaoFazer? esc(v.pedidoObrigacaoFazer) : '—'}</td></tr>
+    <tr><td>2) Danos materiais</td><td class="v">R$ ${v.danosMateriais? esc(v.danosMateriais): '0,00'}</td></tr>
+    <tr><td>3) Danos morais</td><td class="v">R$ ${v.danosMorais? esc(v.danosMorais): '0,00'}</td></tr>
+    <tr class="total"><td>Total dos pedidos</td><td class="v">R$ ${formatMoney(total)}</td></tr>
+  </table>`;
+}
+
+function signBlock(v){
+  return `<div class="sign"><div class="line"></div>${V(v.assinante,'Jurídico Pitzi')}</div>`;
+}
+
+function proconClosing(v){
+  return `
+    <p>Caso a parte consumidora, ou este órgão do PROCON, tenham qualquer dúvida, solicitamos que entrem em contato conosco através do e-mail juridico@pitzi.com.br, ou pelo telefone (11) 2579-0068. Nosso atendimento é de segunda a sexta-feira, das 9h às 18h.</p>
+    <p>Sem mais e certos de vossa providência a respeito.</p>
+    ${signBlock(v)}`;
+}
+
+function buildDocumentHTML(){
+  const m = currentMotivo(), r = currentRamo();
+  if(!m || !r) return '';
+  const v = computedVars();
+  let html = state.tipo==='procon' ? proconHeader(v,m) : judicialHeader(v,m);
+  html += `<h2 class="sec">Fatos</h2>`;
+  html += aberturaFatos(v);
+  html += r.texto(v);
+  html += FECHAMENTO_BOAFE;
+  html += state.tipo==='procon' ? proconClosing(v) : signBlock(v);
+  return html;
+}
+
+/* =========================================================================
+   RENDER — TRILHA DE ÍNDICE (rail)
+   ========================================================================= */
+function renderRail(){
+  const el = document.getElementById('rail');
+  const hadFocus = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.field==='__search';
+  const selStart = hadFocus ? document.activeElement.selectionStart : null;
+
+  const groups = {};
+  MOTIVOS.forEach(m=>{ (groups[m.grupo] = groups[m.grupo] || []).push(m); });
+  const q = state.search.trim().toLowerCase();
+
+  let h = `<div class="rail-head"><input type="search" placeholder="Buscar motivo..." value="${esc(state.search)}" data-field="__search"></div>`;
+  Object.keys(groups).forEach(g=>{
+    const items = groups[g].filter(m => !q || m.titulo.toLowerCase().includes(q) || m.quandoUsar.toLowerCase().includes(q));
+    if(!items.length) return;
+    h += `<div class="rail-group"><h4>${esc(g)}</h4>`;
+    h += items.map(m=>`
+      <div class="rail-item ${m.id===state.motivoId?'active':''}" data-action="select-motivo" data-id="${m.id}">
+        <span class="num">${m.numero}</span><span class="lbl">${esc(m.titulo)}</span>
+      </div>`).join('');
+    h += `</div>`;
+  });
+  el.innerHTML = h;
+
+  if(hadFocus){
+    const inp = el.querySelector('[data-field="__search"]');
+    if(inp){ inp.focus(); try{ inp.setSelectionRange(selStart, selStart); }catch(e){} }
+  }
+}
+
+/* =========================================================================
+   RENDER — FORMULÁRIO
+   ========================================================================= */
+function fieldHTML(f){
+  const val = state.vars[f.key] !== undefined ? state.vars[f.key] : (f.default || '');
+  if(f.type==='select'){
+    const opts = (f.options||[]).map(o=>`<option value="${esc(o)}" ${o===val?'selected':''}>${esc(o)}</option>`).join('');
+    return `<div class="field"><label>${esc(f.label)}</label><select data-field="${f.key}"><option value="">—</option>${opts}</select></div>`;
+  }
+  if(f.type==='textarea'){
+    return `<div class="field"><label>${esc(f.label)}</label><textarea data-field="${f.key}" placeholder="${esc(f.ph||'')}">${esc(val)}</textarea></div>`;
+  }
+  const type = f.type==='date' ? 'date' : (f.type==='number' ? 'number' : 'text');
+  return `<div class="field"><label>${esc(f.label)}</label><input type="${type}" data-field="${f.key}" value="${esc(val)}" placeholder="${esc(f.ph||'')}"></div>`;
+}
+
+function renderForm(){
+  const el = document.getElementById('formPanel');
+  const m = currentMotivo();
+  if(!m){
+    el.innerHTML = `<div class="form-empty">
+      <h2>Monte o subsídio do caso</h2>
+      <p>Escolha um motivo no índice ao lado para começar. O formulário se adapta aos campos, fundamentos e documentos daquele tipo de caso — e o documento à direita é atualizado em tempo real, já no layout padrão de envio.</p>
+      <p>Alterne entre <b>PROCON</b> e <b>Subsídio Judicial</b> no topo a qualquer momento: a estrutura do documento se ajusta, mas os dados já preenchidos são mantidos.</p>
+    </div>`;
+    return;
+  }
+  const r = currentRamo();
+  let h = `<div class="fp-head">
+      <div class="eyebrow">Motivo ${m.numero} · ${esc(m.grupo)}</div>
+      <h3>${esc(m.titulo)}</h3>
+      <p>${esc(m.quandoUsar)}</p>
+    </div><div class="fp-body">`;
+
+  h += `<div class="fieldset"><h5>Dados do caso</h5>${COMMON_FIELDS.map(fieldHTML).join('')}</div>`;
+
+  h += `<div class="fieldset"><h5>${state.tipo==='procon' ? 'Peça — PROCON' : 'Peça — subsídio judicial'}</h5>`;
+  h += (state.tipo==='procon' ? PROCON_FIELDS : JUDICIAL_FIELDS).map(fieldHTML).join('');
+  h += `</div>`;
+
+  h += `<div class="fieldset"><h5>Alegação (${state.tipo==='procon' ? 'inicial / PROCON' : 'da parte autora'})</h5>
+    <div class="field"><textarea data-field="alegacao" style="min-height:74px">${esc(state.vars.alegacao !== undefined ? state.vars.alegacao : m.alegacaoDefault)}</textarea></div>
+  </div>`;
+
+  if(state.tipo==='judicial'){
+    h += `<div class="fieldset"><h5>Requisições da parte autora</h5>`;
+    h += fieldHTML({key:'pedidoObrigacaoFazer', label:'Obrigação de fazer', type:'text', ph:'opcional'});
+    h += `<div class="two-col">`;
+    h += fieldHTML({key:'danosMateriais', label:'Danos materiais (R$)', type:'text', ph:'0,00'});
+    h += fieldHTML({key:'danosMorais', label:'Danos morais (R$)', type:'text', ph:'0,00'});
+    h += `</div></div>`;
+  }
+
+  if(m.camposExtras && m.camposExtras.length){
+    h += `<div class="fieldset"><h5>Detalhes específicos do motivo</h5>${m.camposExtras.map(fieldHTML).join('')}</div>`;
+  }
+
+  h += `<div class="fieldset"><h5>Fundamento aplicável</h5><div class="ramo-list">`;
+  h += m.ramos.map(rm => `
+    <div class="ramo-opt ${rm.id===state.ramoId?'sel':''}" data-action="select-ramo" data-id="${rm.id}">
+      <div class="r-top"><input type="radio" ${rm.id===state.ramoId?'checked':''} readonly><div class="r-label">${esc(rm.label)}</div></div>
+      ${rm.docs.length ? `<div class="r-docs">${rm.docs.length} doc(s): ${rm.docs.map(d=>esc(d.label)).join(' · ')}</div>` : ''}
+    </div>`).join('');
+  h += `</div></div>`;
+
+  if(r && r.docs.length){
+    h += `<div class="fieldset"><h5>Documentos deste fundamento</h5><div class="docs-check">`;
+    h += r.docs.map((d,i)=>{
+      const num = String(i+1).padStart(2,'0');
+      const has = !!state.images[d.id];
+      return `<div class="doc-row ${has?'done':''}">
+        <span class="tag">Doc.${num}</span><span class="name">${esc(d.label)}</span>
+        <button data-action="${has?'remove-doc':'upload-doc'}" data-slot="${d.id}">${has?'Remover':'Anexar'}</button>
+      </div>`;
+    }).join('');
+    h += `</div></div>`;
+  }
+
+  h += `<div class="ref-note">Modelo baseado em casos reais: ${esc(m.baseCasos)}</div>`;
+  h += `</div>`;
+  el.innerHTML = h;
+}
+
+/* =========================================================================
+   RENDER — DOCUMENTO / EXHIBITS
+   ========================================================================= */
+function hydrateExhibits(){
+  const r = currentRamo(); if(!r) return;
+  document.querySelectorAll('#thePage .exhibit[data-slot]').forEach(el=>{
+    const slotId = el.dataset.slot;
+    const docDef = r.docs.find(d=>d.id===slotId);
+    if(!docDef){ el.remove(); return; }
+    const idx = r.docs.indexOf(docDef) + 1;
+    const num = String(idx).padStart(2,'0');
+    const img = state.images[slotId];
+    if(img){
+      el.innerHTML = `<div class="exhibit-filled">
+        <div class="cap"><span class="num">${num}</span><b>Doc. ${num} — ${esc(docDef.label)}</b><button data-action="remove-doc" data-slot="${slotId}">remover</button></div>
+        <img src="${img}" alt="Doc. ${num}">
+      </div>`;
+    } else {
+      el.innerHTML = `<div class="exhibit-box">
+        <div class="num">${num}</div>
+        <div class="lbl"><b>Doc. ${num}</b>${esc(docDef.label)}</div>
+        <button data-action="upload-doc" data-slot="${slotId}">Anexar</button>
+      </div>`;
+    }
+  });
+}
+
+function renderDoc(){
+  const el = document.getElementById('docPanel');
+  const m = currentMotivo();
+  const toolbar = `<div class="dp-toolbar">
+    <button class="tbtn ${state.editMode?'on':''}" data-action="toggle-edit">${state.editMode ? '✓ Editando' : '✎ Editar manualmente'}</button>
+    <div class="spacer"></div>
+    <button class="tbtn" data-action="copy-doc">⧉ Copiar</button>
+    <button class="tbtn primary" data-action="print-doc">🖶 Imprimir / Salvar PDF</button>
+  </div>`;
+  if(!m){
+    el.innerHTML = toolbar + `<div class="empty-doc"><div class="inner">
+      <div class="glyph">§</div>
+      <h3>Nenhum caso selecionado</h3>
+      <p>Escolha um motivo à esquerda para ver o subsídio sendo montado aqui, parágrafo por parágrafo, já no layout padrão de envio.</p>
+    </div></div>`;
+    return;
+  }
+  const body = buildDocumentHTML();
+  el.innerHTML = toolbar + `<div class="doc-wrap"><div class="page" id="thePage" contenteditable="${state.editMode}">${body}</div></div>`;
+  hydrateExhibits();
+}
+
+/* =========================================================================
+   AÇÕES
+   ========================================================================= */
+function selectMotivo(id){
+  const m = MOTIVOS.find(x=>x.id===id);
+  if(!m) return;
+  state.motivoId = id;
+  state.ramoId = m.ramos[0].id;
+  if(state.vars._alegacaoAuto !== false){
+    state.vars.alegacao = m.alegacaoDefault;
+    state.vars._alegacaoAuto = true;
+  }
+  (m.camposExtras||[]).forEach(f=>{ if(state.vars[f.key]===undefined && f.default!==undefined) state.vars[f.key]=f.default; });
+  renderRail(); renderForm(); renderDoc();
+  if(window.innerWidth <= 1100) setMobileTab('form');
+}
+
+function renderTipoToggle(){
+  document.querySelectorAll('#tipoToggle button').forEach(b=> b.classList.toggle('active', b.dataset.tipo===state.tipo));
+}
+
+function setMobileTab(tab){
+  state.mobileTab = tab;
+  document.querySelectorAll('.mobiletabs button').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
+  document.getElementById('rail').classList.toggle('mobile-show', tab==='rail');
+  document.getElementById('formPanel').classList.toggle('mobile-show', tab==='form');
+  document.getElementById('docPanel').classList.toggle('mobile-show', tab==='doc');
+}
+
+function flashToolbarMsg(msg){
+  const btn = document.querySelector('[data-action="copy-doc"]');
+  if(!btn) return;
+  const old = btn.textContent;
+  btn.textContent = msg;
+  setTimeout(()=>{ btn.textContent = old; }, 2400);
+}
+
+function copyDoc(){
+  const page = document.getElementById('thePage');
+  if(!page) return;
+  const range = document.createRange();
+  range.selectNodeContents(page);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){ ok = false; }
+  sel.removeAllRanges();
+  flashToolbarMsg(ok ? '✓ Copiado — cole no Word ou e-mail' : 'Selecione o texto manualmente para copiar');
+}
+
+function resetCase(){
+  state.vars = {}; state.images = {}; state.motivoId = null; state.ramoId = null; state.editMode = false;
+  initDefaults();
+  renderRail(); renderForm(); renderDoc();
+  setMobileTab('rail');
+}
+
+function initDefaults(){
+  if(state.vars.assinante===undefined) state.vars.assinante='Jurídico Pitzi';
+  if(state.vars.destinatarios===undefined) state.vars.destinatarios='nreis@viseu.com.br; cadastrodigital@viseu.com.br; gmurakami@viseu.com.br; juridico@pitzi.com.br';
+  if(state.vars.seguradoras===undefined) state.vars.seguradoras='GAZIN, GENERALI e MAPFRE';
+}
+
+/* =========================================================================
+   LISTENERS GLOBAIS (delegação de eventos)
+   ========================================================================= */
+document.body.addEventListener('input', (e)=>{
+  const f = e.target.dataset.field;
+  if(!f) return;
+  if(f==='__search'){ state.search = e.target.value; renderRail(); return; }
+  state.vars[f] = e.target.value;
+  if(f==='alegacao') state.vars._alegacaoAuto = false;
+  renderDoc();
+});
+
+document.body.addEventListener('change', (e)=>{
+  const f = e.target.dataset.field;
+  if(!f || e.target.tagName!=='SELECT') return;
+  state.vars[f] = e.target.value;
+  renderDoc();
+});
+
+document.body.addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-action]');
+  if(!btn) return;
+  const action = btn.dataset.action;
+  if(action==='select-motivo'){ selectMotivo(btn.dataset.id); }
+  else if(action==='select-ramo'){ state.ramoId = btn.dataset.id; renderForm(); renderDoc(); }
+  else if(action==='set-tipo'){ state.tipo = btn.dataset.tipo; renderTipoToggle(); renderForm(); renderDoc(); }
+  else if(action==='upload-doc'){ state.pendingSlot = btn.dataset.slot; document.getElementById('fileInput').click(); }
+  else if(action==='remove-doc'){ delete state.images[btn.dataset.slot]; renderForm(); renderDoc(); }
+  else if(action==='toggle-edit'){ state.editMode = !state.editMode; renderDoc(); }
+  else if(action==='copy-doc'){ copyDoc(); }
+  else if(action==='print-doc'){ window.print(); }
+  else if(action==='novo-caso'){ if(confirm('Começar um novo caso? Os dados preenchidos e imagens anexadas serão apagados.')) resetCase(); }
+  else if(action==='mobile-tab'){ setMobileTab(btn.dataset.tab); }
+});
+
+document.getElementById('fileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file || !state.pendingSlot) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    state.images[state.pendingSlot] = reader.result;
+    state.pendingSlot = null;
+    renderForm(); renderDoc();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+/* =========================================================================
+   BOOT
+   ========================================================================= */
+function boot(){
+  initDefaults();
+  renderTipoToggle();
+  renderRail();
+  renderForm();
+  renderDoc();
+}
+boot();
+</script>
+</body>
+</html>
+

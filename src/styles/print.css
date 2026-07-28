@@ -1,0 +1,26 @@
+@media print {
+  .sidebar,
+  .topbar,
+  .no-print {
+    display: none !important;
+  }
+
+  .app-shell {
+    display: block;
+  }
+
+  .content {
+    padding: 0;
+  }
+
+  .doc-preview {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    max-width: none;
+  }
+
+  body {
+    background: #fff;
+  }
+}
