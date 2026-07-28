@@ -12,15 +12,34 @@ interface Props {
   onClose: () => void;
   onSaved: () => void;
   initialProcessoId?: string;
+  /** Pre-fills the tipo (e.g. coming from an Intimação's freeform tipoAcao). If it
+   * matches a config.tiposPeca entry (case-insensitive), that entry's diasUteis is used. */
+  initialTipo?: string;
+  initialCriarEvento?: boolean;
+  /** Called right after the Prazo is persisted, before onSaved — lets callers capture the new id. */
+  onCreated?: (prazo: Prazo) => void;
 }
 
-export function PrazoFormModal({ processos, escritorios, config, onClose, onSaved, initialProcessoId }: Props) {
+export function PrazoFormModal({
+  processos,
+  escritorios,
+  config,
+  onClose,
+  onSaved,
+  initialProcessoId,
+  initialTipo,
+  initialCriarEvento,
+  onCreated,
+}: Props) {
   const [processoId, setProcessoId] = useState(initialProcessoId ?? '');
-  const [tipo, setTipo] = useState(config.tiposPeca[0]?.tipo ?? '');
-  const [dias, setDias] = useState(config.tiposPeca[0]?.diasUteis ?? 10);
+  const initialTipoCfg = initialTipo
+    ? config.tiposPeca.find((t) => t.tipo.toLowerCase() === initialTipo.toLowerCase())
+    : config.tiposPeca[0];
+  const [tipo, setTipo] = useState(initialTipo ?? config.tiposPeca[0]?.tipo ?? '');
+  const [dias, setDias] = useState(initialTipoCfg?.diasUteis ?? 10);
   const [dataBase, setDataBase] = useState(todayISO());
   const [responsavel, setResponsavel] = useState<string>('interno');
-  const [criarEvento, setCriarEvento] = useState(true);
+  const [criarEvento, setCriarEvento] = useState(initialCriarEvento ?? true);
 
   const holidays = useMemo(
     () => buildHolidaySet(config.feriadosCustom, [new Date().getFullYear(), new Date().getFullYear() + 1]),
@@ -48,6 +67,7 @@ export function PrazoFormModal({ processos, escritorios, config, onClose, onSave
       createdAt: new Date().toISOString(),
     };
     await repos.prazos.create(prazo);
+    onCreated?.(prazo);
 
     if (criarEvento) {
       await repos.eventos.create({

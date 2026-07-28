@@ -232,12 +232,91 @@ export async function seedIfEmpty(
     },
   ];
 
+  const pagamentosEscritorio: import('./types').PagamentoEscritorio[] = [
+    {
+      id: newId(),
+      escritorioId: viseu.id,
+      processoId: processos[1].id,
+      descricao: 'Honorários — contestação',
+      tipo: 'honorarios',
+      valor: 1800,
+      vencimento: isoDaysFromNow(5),
+      status: 'pendente',
+      createdAt: now,
+    },
+    {
+      id: newId(),
+      escritorioId: cgv.id,
+      processoId: processos[2].id,
+      descricao: 'Honorários de êxito',
+      tipo: 'exito',
+      valor: 950,
+      vencimento: isoDaysFromNow(-4),
+      status: 'atrasado',
+      createdAt: now,
+    },
+  ];
+
+  const condenacoes: import('./types').CondenacaoJudicial[] = [
+    {
+      id: newId(),
+      processoId: processos[4].id,
+      descricao: 'Condenação — danos morais',
+      valor: 3000,
+      prazoPagamento: isoDaysFromNow(20),
+      status: 'pendente',
+      createdAt: now,
+    },
+  ];
+
+  const parceriasCRM: import('./types').ParceriaCRM[] = [
+    {
+      id: newId(),
+      parceiro: 'Kakau',
+      seguradoraId: kakau.id,
+      estagio: 'Ativo',
+      responsavelInterno: 'Jurídico Interno',
+      contatos: [{ id: newId(), at: now, resumo: 'Renovação de convênio institucional discutida.' }],
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: newId(),
+      parceiro: 'Mapfre',
+      seguradoraId: mapfre.id,
+      estagio: 'Em negociação',
+      responsavelInterno: 'Jurídico Interno',
+      contatos: [],
+      createdAt: now,
+      updatedAt: now,
+    },
+  ];
+
+  const atas: import('./types').AtaReuniao[] = [
+    {
+      id: newId(),
+      titulo: 'Alinhamento mensal — Viseu Advogados',
+      data: isoDaysFromNow(-7),
+      participantes: ['Nadjane Reis', 'Jurídico Interno'],
+      pauta: 'Revisão de casos em aberto e prazos da semana.',
+      decisoes: 'Priorizar contestações com prazo nos próximos 15 dias.',
+      acoes: [
+        { id: newId(), descricao: 'Enviar documentos pendentes do caso Cliente Exemplo 2', responsavel: 'Jurídico Interno', concluida: false },
+      ],
+      createdAt: now,
+    },
+  ];
+
   await repos.escritorios.replaceAll(escritorios);
   await repos.seguradoras.replaceAll(seguradoras);
   await repos.clientes.replaceAll(clientes);
   await repos.processos.replaceAll(processos);
   await repos.prazos.replaceAll(prazos);
   await repos.eventos.replaceAll(eventos);
+  await repos.pagamentosEscritorio.replaceAll(pagamentosEscritorio);
+  await repos.condenacoes.replaceAll(condenacoes);
+  await repos.parceriasCRM.replaceAll(parceriasCRM);
+  await repos.atas.replaceAll(atas);
 
   const config = await getConfig();
   await saveConfig({

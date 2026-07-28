@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
-import { Briefcase, AlarmClock, CalendarClock, TriangleAlert, Wallet } from 'lucide-react';
+import { Briefcase, AlarmClock, CalendarClock, TriangleAlert, Wallet, ShieldAlert } from 'lucide-react';
 import { repos } from '../../data/db';
 import { useCollection } from '../../hooks/useCollection';
 import { KpiCard } from '../../components/ui/KpiCard';
 import { CategoricalBarChart } from '../../components/charts/CategoricalBarChart';
 import { DonutChart } from '../../components/charts/DonutChart';
 import { formatDateBR } from '../../lib/businessDays';
+import { computeSmartAlerts } from './smartAlerts';
 import {
   casosProcon,
   currencyBRL,
@@ -23,6 +24,15 @@ export function Dashboard() {
   const { items: prazos } = useCollection(repos.prazos);
   const { items: escritorios } = useCollection(repos.escritorios);
   const { items: seguradoras } = useCollection(repos.seguradoras);
+  const { items: intimacoes } = useCollection(repos.intimacoes);
+  const { items: pagamentosEscritorio } = useCollection(repos.pagamentosEscritorio);
+  const { items: condenacoes } = useCollection(repos.condenacoes);
+
+  const alertas = computeSmartAlerts(processos, prazos, escritorios, pagamentosEscritorio, condenacoes);
+  const intimacoesRecentes = intimacoes
+    .slice()
+    .sort((a, b) => b.recebidoEm.localeCompare(a.recebidoEm))
+    .slice(0, 4);
 
   const ativos = processosAtivos(processos);
   const hoje = prazosNoBucket(prazos, 'hoje');
@@ -149,14 +159,30 @@ export function Dashboard() {
             </div>
           </div>
           <div className="card-pad">
-            <p className="text-muted text-sm">
-              O módulo de Intimações (inbox + sugestão automática de prazo por tipo de peça) chega na
-              Fase 2. Por ora, lance os prazos diretamente em{' '}
-              <Link to="/prazos" style={{ color: 'var(--pitzi-accent-dark)', fontWeight: 600 }}>
-                Prazos
-              </Link>
-              .
-            </p>
+            {intimacoesRecentes.length === 0 ? (
+              <p className="text-muted text-sm">
+                Nenhuma intimação registrada ainda. Lance a primeira em{' '}
+                <Link to="/intimacoes" style={{ color: 'var(--pitzi-accent-dark)', fontWeight: 600 }}>
+                  Intimações
+                </Link>
+                .
+              </p>
+            ) : (
+              <div className="stack">
+                {intimacoesRecentes.map((i) => (
+                  <div key={i.id} className="row" style={{ justifyContent: 'space-between', fontSize: 12.5 }}>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{i.tipoAcao}</div>
+                      <div className="text-muted">{i.tribunalVara || '—'}</div>
+                    </div>
+                    <div className="text-muted">{formatDateBR(i.recebidoEm)}</div>
+                  </div>
+                ))}
+                <Link to="/intimacoes" style={{ color: 'var(--pitzi-accent-dark)', fontWeight: 600, fontSize: 12.5 }}>
+                  Ver todas →
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
@@ -188,11 +214,53 @@ export function Dashboard() {
               </ul>
             )}
             <p className="text-muted text-sm" style={{ marginTop: 10 }}>
-              Integração com status de adesão ao ProConsumidor prevista para a Fase 5.
+              Checklist de conformidade e status de adesão ao ProConsumidor em{' '}
+              <Link to="/compliance" style={{ color: 'var(--pitzi-accent-dark)', fontWeight: 600 }}>
+                Compliance
+              </Link>
+              .
             </p>
           </div>
         </div>
       </div>
+
+      {alertas.length > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <div>
+              <div className="card-title">Alertas inteligentes</div>
+              <div className="card-sub">Riscos identificados automaticamente a partir dos dados atuais</div>
+            </div>
+          </div>
+          <div className="card-pad">
+            <div className="stack">
+              {alertas.map((a) => (
+                <div
+                  key={a.id}
+                  className="row"
+                  style={{
+                    alignItems: 'flex-start',
+                    gap: 10,
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    background: a.severidade === 'alta' ? 'var(--pitzi-warn-bg)' : 'var(--pitzi-amber-bg)',
+                  }}
+                >
+                  <ShieldAlert
+                    size={16}
+                    style={{ marginTop: 1, flex: 'none' }}
+                    color={a.severidade === 'alta' ? 'var(--pitzi-warn)' : 'var(--pitzi-amber)'}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 13 }}>{a.titulo}</div>
+                    <div className="text-muted text-sm">{a.detalhe}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

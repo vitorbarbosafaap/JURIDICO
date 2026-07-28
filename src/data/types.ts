@@ -103,6 +103,8 @@ export interface Processo extends SoftDeletable {
   comunicacoes: ComunicacaoEntry[];
   financeiro: LancamentoFinanceiro[];
   auditoria: AuditEntry[];
+  adesaoProConsumidor?: StatusProConsumidor;
+  checklistProcon?: ChecklistProconItem[];
 }
 
 export type ResponsavelPrazo = 'interno' | ID; // ID references an Escritorio
@@ -162,6 +164,7 @@ export interface AppConfig {
   tiposPeca: TipoPecaConfig[];
   feriadosCustom: FeriadoForense[];
   retencaoLixeiraDias: number;
+  checklistProconGlobal?: ChecklistProconItem[];
 }
 
 export type UrgencyBucket =
@@ -171,3 +174,157 @@ export type UrgencyBucket =
   | 'quinzena'
   | 'sem-urgencia'
   | 'cumprido';
+
+// ---------------------------------------------------------------------------
+// Fase 2 — Automação documental
+// ---------------------------------------------------------------------------
+
+export type StatusAprovacao = 'rascunho' | 'revisao' | 'aprovado' | 'enviado';
+export type Genero = 'masculino' | 'feminino';
+
+export interface CartaRecusa extends SoftDeletable {
+  id: ID;
+  processoId?: ID;
+  seguradoraId?: ID;
+  genero: Genero;
+  categoriaHipoteseId: string;
+  vars: Record<string, string>;
+  status: StatusAprovacao;
+  createdAt: string;
+  updatedAt: string;
+  historico: { id: ID; at: string; de: StatusAprovacao | null; para: StatusAprovacao; autor: string }[];
+}
+
+export interface SubsidioGerado extends SoftDeletable {
+  id: ID;
+  processoId?: ID;
+  tipo: 'procon' | 'judicial';
+  motivoId: string;
+  ramoId: string;
+  vars: Record<string, string>;
+  createdAt: string;
+}
+
+export interface AtaAcao {
+  id: ID;
+  descricao: string;
+  responsavel: string;
+  prazo?: string; // ISO date
+  prazoId?: ID; // linked Prazo if converted
+  concluida: boolean;
+}
+
+export interface AtaReuniao extends SoftDeletable {
+  id: ID;
+  titulo: string;
+  data: string; // ISO date
+  participantes: string[];
+  pauta: string;
+  decisoes: string;
+  acoes: AtaAcao[];
+  processoId?: ID;
+  createdAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// Fase 3 — Financeiro e CRM
+// ---------------------------------------------------------------------------
+
+export type StatusPagamento = 'pendente' | 'aprovado' | 'pago' | 'atrasado';
+
+export interface PagamentoEscritorio extends SoftDeletable {
+  id: ID;
+  escritorioId: ID;
+  processoId?: ID;
+  descricao: string;
+  tipo: 'honorarios' | 'exito' | 'reembolso' | 'outro';
+  valor: number;
+  notaFiscal?: string;
+  vencimento: string;
+  status: StatusPagamento;
+  pagoEm?: string;
+  createdAt: string;
+}
+
+export interface CondenacaoJudicial extends SoftDeletable {
+  id: ID;
+  processoId: ID;
+  descricao: string;
+  valor: number;
+  prazoPagamento: string; // ISO date
+  status: StatusPagamento;
+  comprovanteUrl?: string;
+  createdAt: string;
+}
+
+export type EstagioParceria =
+  | 'Prospecção'
+  | 'Em negociação'
+  | 'Ativo'
+  | 'Em revisão'
+  | 'Encerrado';
+
+export interface ContatoParceria {
+  id: ID;
+  at: string;
+  resumo: string;
+}
+
+export interface ParceriaCRM extends SoftDeletable {
+  id: ID;
+  parceiro: string;
+  seguradoraId?: ID;
+  estagio: EstagioParceria;
+  responsavelInterno?: string;
+  observacoes?: string;
+  contatos: ContatoParceria[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// Fase 4 — Integração de dados
+// ---------------------------------------------------------------------------
+
+export type StorageBackendKind = 'local' | 'google-sheets' | 'firebase';
+
+export interface GoogleSheetsBackendConfig {
+  webAppUrl: string;
+  apiKey?: string;
+}
+
+export interface FirebaseBackendConfig {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
+  appId: string;
+}
+
+export interface BackendSettings {
+  active: StorageBackendKind;
+  googleSheets?: GoogleSheetsBackendConfig;
+  firebase?: FirebaseBackendConfig;
+}
+
+// ---------------------------------------------------------------------------
+// Fase 5 — Compliance e auditoria avançada
+// ---------------------------------------------------------------------------
+
+export type StatusProConsumidor = 'nao_aderido' | 'aderido' | 'nao_aplicavel';
+
+export interface ChecklistProconItem {
+  id: ID;
+  item: string;
+  atendido: boolean;
+}
+
+export interface GlobalAuditEntry {
+  id: ID;
+  at: string;
+  colecao: string;
+  entidadeId: string;
+  entidadeLabel: string;
+  acao: 'criação' | 'atualização' | 'exclusão' | 'restauração';
+  autor: string;
+  detalhe?: string;
+}

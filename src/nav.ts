@@ -14,6 +14,8 @@ import {
   Settings,
   Trash2,
   BookOpen,
+  ScrollText,
+  ShieldCheck,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -43,22 +45,24 @@ export const NAV: NavGroup[] = [
     items: [
       { label: 'Processos', path: '/processos', icon: Briefcase, implemented: true },
       { label: 'Clientes', path: '/clientes', icon: Users, implemented: true },
-      { label: 'Financeiro', path: '/financeiro', icon: Wallet, implemented: false },
-      { label: 'CRM (Captação)', path: '/crm', icon: Handshake, implemented: false },
+      { label: 'Financeiro', path: '/financeiro', icon: Wallet, implemented: true },
+      { label: 'CRM (Captação)', path: '/crm', icon: Handshake, implemented: true },
     ],
   },
   {
     title: 'Ferramentas',
     items: [
-      { label: 'Intimações', path: '/intimacoes', icon: Inbox, implemented: false },
-      { label: 'Gerador de Subsídios', path: '/gerador-subsidios', icon: FileText, implemented: false },
-      { label: 'Cartas de Recusa/Notificação', path: '/gerador-cartas', icon: MailWarning, implemented: false },
-      { label: 'ATA/Reunião', path: '/ata', icon: ClipboardList, implemented: false },
+      { label: 'Intimações', path: '/intimacoes', icon: Inbox, implemented: true },
+      { label: 'Gerador de Subsídios', path: '/gerador-subsidios', icon: FileText, implemented: true },
+      { label: 'Cartas de Recusa/Notificação', path: '/gerador-cartas', icon: MailWarning, implemented: true },
+      { label: 'ATA/Reunião', path: '/ata', icon: ClipboardList, implemented: true },
     ],
   },
   {
     title: 'Gestão',
     items: [
+      { label: 'Compliance', path: '/compliance', icon: ShieldCheck, implemented: true },
+      { label: 'Auditoria', path: '/auditoria', icon: ScrollText, implemented: true },
       { label: 'Configurações', path: '/configuracoes', icon: Settings, implemented: true },
       { label: 'Exclusões', path: '/exclusoes', icon: Trash2, implemented: true },
       { label: 'Guia (Passo a Passo)', path: '/guia', icon: BookOpen, implemented: false },

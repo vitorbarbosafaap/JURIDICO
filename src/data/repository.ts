@@ -1,8 +1,24 @@
 import { storage } from './storageAdapter';
+import { logGlobalAudit } from './globalAudit';
 import type { ID, SoftDeletable } from './types';
 
+export { newId } from './id';
+
+// Best-effort human label for an audit entry — most of our entities carry
+// one of these fields; falls back to the id if none match.
+function labelFor(item: Record<string, unknown>): string {
+  const candidates = ['titulo', 'nome', 'parceiro', 'numeroCNJ', 'tipoAcao', 'tipo', 'descricao'];
+  for (const key of candidates) {
+    const value = item[key];
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return String(item.id ?? 'registro');
+}
+
 // Generic repository giving every collection consistent CRUD + soft-delete
-// semantics on top of the pluggable StorageAdapter.
+// semantics on top of the pluggable StorageAdapter. Every mutation is also
+// mirrored into the global audit log (src/data/globalAudit.ts) for the
+// Auditoria page — best-effort, never blocks or throws on the caller.
 export class Repository<T extends { id: ID } & SoftDeletable> {
   private cache: T[] | null = null;
   private listeners = new Set<() => void>();
@@ -29,6 +45,10 @@ export class Repository<T extends { id: ID } & SoftDeletable> {
     this.notify();
   }
 
+  private audit(entidadeId: string, entidadeLabel: string, acao: 'criação' | 'atualização' | 'exclusão' | 'restauração') {
+    logGlobalAudit({ colecao: this.collection, entidadeId, entidadeLabel, acao, autor: 'Você' }).catch(() => {});
+  }
+
   async list(includeDeleted = false): Promise<T[]> {
     const all = await this.load();
     return includeDeleted ? all : all.filter((item) => !item.deletedAt);
@@ -43,10 +63,11 @@ export class Repository<T extends { id: ID } & SoftDeletable> {
     const all = await this.load();
     all.push(item);
     await this.persist();
+    this.audit(item.id, labelFor(item as unknown as Record<string, unknown>), 'criação');
     return item;
   }
 
-  async update(id: ID, patch: Partial<T>): Promise<T | undefined> {
+  private async applyPatch(id: ID, patch: Partial<T>): Promise<T | undefined> {
     const all = await this.load();
     const idx = all.findIndex((item) => item.id === id);
     if (idx === -1) return undefined;
@@ -55,12 +76,20 @@ export class Repository<T extends { id: ID } & SoftDeletable> {
     return all[idx];
   }
 
+  async update(id: ID, patch: Partial<T>): Promise<T | undefined> {
+    const updated = await this.applyPatch(id, patch);
+    if (updated) this.audit(id, labelFor(updated as unknown as Record<string, unknown>), 'atualização');
+    return updated;
+  }
+
   async softDelete(id: ID): Promise<void> {
-    await this.update(id, { deletedAt: new Date().toISOString() } as Partial<T>);
+    const updated = await this.applyPatch(id, { deletedAt: new Date().toISOString() } as Partial<T>);
+    if (updated) this.audit(id, labelFor(updated as unknown as Record<string, unknown>), 'exclusão');
   }
 
   async restore(id: ID): Promise<void> {
-    await this.update(id, { deletedAt: null } as Partial<T>);
+    const updated = await this.applyPatch(id, { deletedAt: null } as Partial<T>);
+    if (updated) this.audit(id, labelFor(updated as unknown as Record<string, unknown>), 'restauração');
   }
 
   async hardDelete(id: ID): Promise<void> {
@@ -78,11 +107,4 @@ export class Repository<T extends { id: ID } & SoftDeletable> {
     this.cache = items;
     await this.persist();
   }
-}
-
-export function newId(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }

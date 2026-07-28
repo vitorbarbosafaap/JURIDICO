@@ -5,9 +5,18 @@ import { useCollection } from '../../hooks/useCollection';
 import { useConfig } from '../../hooks/useConfig';
 import { newId } from '../../data/repository';
 import { Tabs } from '../../components/ui/Tabs';
+import { IntegracaoDadosTab } from './IntegracaoDadosTab';
+import { SegurancaTab } from './SegurancaTab';
 import type { Escritorio, Seguradora } from '../../data/types';
 
-const TABS = ['Escritórios', 'Seguradoras', 'Tipos de Peça (prazos padrão)', 'Feriados Forenses'];
+const TABS = [
+  'Escritórios',
+  'Seguradoras',
+  'Tipos de Peça (prazos padrão)',
+  'Feriados Forenses',
+  'Integração de Dados',
+  'Segurança',
+];
 
 export function Configuracoes() {
   const [tab, setTab] = useState(TABS[0]);
@@ -25,6 +34,8 @@ export function Configuracoes() {
       {tab === 'Seguradoras' && <SeguradorasTab />}
       {tab === 'Tipos de Peça (prazos padrão)' && <TiposPecaTab />}
       {tab === 'Feriados Forenses' && <FeriadosTab />}
+      {tab === 'Integração de Dados' && <IntegracaoDadosTab />}
+      {tab === 'Segurança' && <SegurancaTab />}
     </div>
   );
 }

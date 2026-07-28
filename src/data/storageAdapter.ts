@@ -32,6 +32,29 @@ export class LocalStorageAdapter implements StorageAdapter {
   }
 }
 
-// Swap this single line to point the whole app at a different backend
-// (e.g. new GoogleSheetsAdapter() or new FirebaseAdapter()) once Fase 4 lands.
-export const storage: StorageAdapter = new LocalStorageAdapter();
+// `storage` is a stable dispatcher — repositories hold this reference forever,
+// but every call is forwarded to whichever adapter is currently active. This
+// lets Configurações → Integração de Dados swap the backend (Local, Google
+// Sheets, Firebase) at runtime via setActiveAdapter(), without repositories
+// ever needing to know. See src/data/bootstrapBackend.ts for how the choice
+// persisted in BackendSettings gets applied on app boot.
+let activeAdapter: StorageAdapter = new LocalStorageAdapter();
+
+export function setActiveAdapter(adapter: StorageAdapter): void {
+  activeAdapter = adapter;
+}
+
+export function getActiveAdapter(): StorageAdapter {
+  return activeAdapter;
+}
+
+class DispatchingAdapter implements StorageAdapter {
+  getAll<T>(collection: string): Promise<T[]> {
+    return activeAdapter.getAll<T>(collection);
+  }
+  saveAll<T>(collection: string, items: T[]): Promise<void> {
+    return activeAdapter.saveAll<T>(collection, items);
+  }
+}
+
+export const storage: StorageAdapter = new DispatchingAdapter();

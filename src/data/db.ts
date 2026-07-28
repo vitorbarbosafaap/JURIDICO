@@ -1,16 +1,24 @@
 import { Repository } from './repository';
 import type {
   AppConfig,
+  AtaReuniao,
+  CartaRecusa,
   Cliente,
+  CondenacaoJudicial,
   Escritorio,
   EventoAgenda,
   Intimacao,
+  PagamentoEscritorio,
+  ParceriaCRM,
   Prazo,
   Processo,
   Seguradora,
+  SubsidioGerado,
 } from './types';
 import { storage } from './storageAdapter';
 import { seedIfEmpty } from './seed';
+
+export { logGlobalAudit, listGlobalAudit } from './globalAudit';
 
 export const repos = {
   processos: new Repository<Processo>('processos'),
@@ -20,6 +28,12 @@ export const repos = {
   escritorios: new Repository<Escritorio>('escritorios'),
   seguradoras: new Repository<Seguradora>('seguradoras'),
   intimacoes: new Repository<Intimacao>('intimacoes'),
+  cartasRecusa: new Repository<CartaRecusa>('cartasRecusa'),
+  subsidiosGerados: new Repository<SubsidioGerado>('subsidiosGerados'),
+  atas: new Repository<AtaReuniao>('atas'),
+  pagamentosEscritorio: new Repository<PagamentoEscritorio>('pagamentosEscritorio'),
+  condenacoes: new Repository<CondenacaoJudicial>('condenacoes'),
+  parceriasCRM: new Repository<ParceriaCRM>('parceriasCRM'),
 };
 
 const CONFIG_KEY = 'config';
